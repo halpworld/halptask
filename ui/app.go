@@ -192,6 +192,10 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 	if err == nil {
 		m.Tree = tree
 		m.ensureValidCursor()
+		if storage.FilePath != cfg.DataFile {
+			cfg.DataFile = storage.FilePath
+			_ = config.SaveConfig(cfg)
+		}
 	}
 
 	return m, nil
@@ -1385,6 +1389,10 @@ func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.Storage.Encrypted = true
 			m.Mode = ModeNormal
 			m.ensureValidCursor()
+			if m.Storage.FilePath != m.Config.DataFile {
+				m.Config.DataFile = m.Storage.FilePath
+				_ = config.SaveConfig(m.Config)
+			}
 			m.StatusMsg = "Decrypted & loaded successfully 🔓"
 			return m, nil
 		} else if m.PromptType == PromptPassphraseSet {

@@ -62,7 +62,7 @@ func DefaultConfig() *Config {
 	if err != nil {
 		home = "."
 	}
-	defaultData := filepath.Join(home, ".config", "halptask", "data.txt")
+	defaultData := filepath.Join(home, ".config", "halptask", "data.pb")
 	return &Config{
 		AutoSave:        true,
 		CheckUpdates:    true,
