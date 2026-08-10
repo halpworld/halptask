@@ -40,11 +40,17 @@ Run `halptask` in your terminal:
 # Launch with default file (~/.config/halptask/data.txt)
 halptask
 
-# Launch with a custom task file
+# Launch with a custom task file (short -f or long --file)
 halptask -f ~/projects/website_redesign.txt
+halptask --file ~/projects/website_redesign.txt
 
-# Prompt for encryption setup on launch
+# Prompt for encryption setup on launch (short -e or long --encrypt)
+halptask -e
 halptask --encrypt
+
+# Print version or check updates (-v / --version, -u / --update, -c / --check-update)
+halptask -v
+halptask -c
 ```
 
 ---

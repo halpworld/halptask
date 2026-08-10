@@ -123,11 +123,17 @@ go build -o halptask .
 
 ### CLI Flags
 
-```bash
-./halptask -f ~/.config/halptask/my_tasks.txt    # Custom data file path
-./halptask --encrypt                               # Force prompt for encryption
-./halptask --version                               # Print version info
-```
+HalpTask follows standard Unix/POSIX (`nix`) CLI flag conventions, supporting double-dash (`--`) for long options and single-dash (`-`) for short options:
+
+| Short | Long | Description | Example |
+|---|---|---|---|
+| `-f` | `--file` | Path to halptask data file | `halptask -f ~/tasks.txt` / `halptask --file ~/tasks.txt` |
+| `-e` | `--encrypt` | Force enable encryption | `halptask -e` / `halptask --encrypt` |
+| `-v` | `--version` | Print version info | `halptask -v` / `halptask --version` |
+| `-u` | `--update` | Check and auto-update binary | `halptask -u` / `halptask --update` |
+| `-c` | `--check-update` | Check if new version is available | `halptask -c` / `halptask --check-update` |
+| `-r` | `--repo` | Override target GitHub repository | `halptask -r owner/repo` / `halptask --repo owner/repo` |
+
 
 ---
 

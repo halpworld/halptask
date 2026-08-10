@@ -21,21 +21,21 @@ const (
 )
 
 type TagModal struct {
-	Width       int
-	Height      int
-	State       TagModalState
+	Width         int
+	Height        int
+	State         TagModalState
 	SelectedIndex int
-	TagConfigs  []config.TagConfig
-	Item        *model.Item
-	Tree        *model.Tree
+	TagConfigs    []config.TagConfig
+	Item          *model.Item
+	Tree          *model.Tree
 
 	// Fields for creating a new tag
-	TextInput   textinput.Model
-	NewTagName  string
-	NewEmoji    string
-	NewColor    string
-	EmojiIndex  int
-	ColorIndex  int
+	TextInput  textinput.Model
+	NewTagName string
+	NewEmoji   string
+	NewColor   string
+	EmojiIndex int
+	ColorIndex int
 }
 
 var EmojiOptions = []string{"🏷️", "🐛", "🔥", "✨", "💼", "🏠", "💡", "📌", "👀", "⚡", "🎯", "🚀", "🎨", "🧪", "🔒", "⭐"}
@@ -64,10 +64,10 @@ func NewTagModal(tagConfigs []config.TagConfig) *TagModal {
 	ti.CharLimit = 20
 
 	return &TagModal{
-		State:       TagModalSelect,
+		State:         TagModalSelect,
 		SelectedIndex: 0,
-		TagConfigs:  tagConfigs,
-		TextInput:   ti,
+		TagConfigs:    tagConfigs,
+		TextInput:     ti,
 	}
 }
 

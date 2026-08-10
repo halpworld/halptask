@@ -68,35 +68,35 @@ func doUpdateCmd(rel *updater.ReleaseInfo) tea.Cmd {
 }
 
 type AppModel struct {
-	Config       *config.Config
-	Storage      *model.Storage
-	Tree         *model.Tree
-	UndoStack    []*model.Tree
-	RedoStack    []*model.Tree
+	Config    *config.Config
+	Storage   *model.Storage
+	Tree      *model.Tree
+	UndoStack []*model.Tree
+	RedoStack []*model.Tree
 
 	Mode         AppMode
 	CursorIndex  int
 	ScrollOffset int
 	SelectedID   string
 
-	TextInput    textinput.Model
-	SearchInput  textinput.Model
-	JumpInput    textinput.Model
-	PromptInput  textinput.Model
-	PromptType   PromptType
+	TextInput   textinput.Model
+	SearchInput textinput.Model
+	JumpInput   textinput.Model
+	PromptInput textinput.Model
+	PromptType  PromptType
 
-	WhichKey     WhichKeyModel
-	QuickHelp    QuickHelp
-	TreeView     TreeView
-	StatusBar    StatusBar
-	HelpModal    HelpModal
-	TagModal     *TagModal
-	ConfigModal  *ConfigModal
+	WhichKey    WhichKeyModel
+	QuickHelp   QuickHelp
+	TreeView    TreeView
+	StatusBar   StatusBar
+	HelpModal   HelpModal
+	TagModal    *TagModal
+	ConfigModal *ConfigModal
 
-	Passphrase    string
-	StatusMsg     string
-	Width         int
-	Height        int
+	Passphrase string
+	StatusMsg  string
+	Width      int
+	Height     int
 
 	ZoomedID      string
 	HideCompleted bool

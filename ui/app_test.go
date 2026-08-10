@@ -639,7 +639,6 @@ func TestTitleBarVersionAndSpace(t *testing.T) {
 		t.Fatalf("expected title bar to omit update version 'v0.0.6' when space is insufficient, got %q", renderedNarrow)
 	}
 }
-
 func TestJumpToID(t *testing.T) {
 	cfg := config.DefaultConfig()
 	tree := model.NewTree()
@@ -704,5 +703,3 @@ func TestJumpToID(t *testing.T) {
 		t.Fatalf("expected error status msg for missing ID, got %q", app.StatusMsg)
 	}
 }
-
-

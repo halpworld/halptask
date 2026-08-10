@@ -12,14 +12,14 @@ const (
 )
 
 type Item struct {
-	ID       string      `json:"id"`
-	Text     string      `json:"text"`
-	IsTask   bool        `json:"is_task"`
-	Status   TaskStatus  `json:"status"`
-	Folded   bool        `json:"folded"`
-	Tags     []string    `json:"tags,omitempty"`
-	Children []*Item     `json:"children,omitempty"`
-	Parent   *Item       `json:"-"`
+	ID       string     `json:"id"`
+	Text     string     `json:"text"`
+	IsTask   bool       `json:"is_task"`
+	Status   TaskStatus `json:"status"`
+	Folded   bool       `json:"folded"`
+	Tags     []string   `json:"tags,omitempty"`
+	Children []*Item    `json:"children,omitempty"`
+	Parent   *Item      `json:"-"`
 }
 
 func NewItem(id, text string) *Item {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -10,21 +9,41 @@ import (
 	"github.com/kenth/halptask/model"
 	"github.com/kenth/halptask/ui"
 	"github.com/kenth/halptask/updater"
+	flag "github.com/spf13/pflag"
 )
 
 const Version = "0.0.5"
 
-func main() {
-	filePathFlag := flag.String("f", "", "Path to halptask data file")
-	filePathLongFlag := flag.String("file", "", "Path to halptask data file")
-	encryptFlag := flag.Bool("encrypt", false, "Force enable encryption")
-	versionFlag := flag.Bool("version", false, "Print version")
-	updateFlag := flag.Bool("update", false, "Check for updates and perform auto-update if a new version is available")
-	checkUpdateFlag := flag.Bool("check-update", false, "Check if a new version is available")
-	repoFlag := flag.String("repo", "", "Override target GitHub repository (e.g. owner/repo)")
-	flag.Parse()
+type CLIFlags struct {
+	FilePath    string
+	Encrypt     bool
+	Version     bool
+	Update      bool
+	CheckUpdate bool
+	Repo        string
+}
 
-	if *versionFlag {
+func parseFlags(args []string) (*CLIFlags, *flag.FlagSet, error) {
+	flags := &CLIFlags{}
+	fs := flag.NewFlagSet("halptask", flag.ContinueOnError)
+	fs.StringVarP(&flags.FilePath, "file", "f", "", "Path to halptask data file")
+	fs.BoolVarP(&flags.Encrypt, "encrypt", "e", false, "Force enable encryption")
+	fs.BoolVarP(&flags.Version, "version", "v", false, "Print version")
+	fs.BoolVarP(&flags.Update, "update", "u", false, "Check for updates and perform auto-update if a new version is available")
+	fs.BoolVarP(&flags.CheckUpdate, "check-update", "c", false, "Check if a new version is available")
+	fs.StringVarP(&flags.Repo, "repo", "r", "", "Override target GitHub repository (e.g. owner/repo)")
+
+	err := fs.Parse(args)
+	return flags, fs, err
+}
+
+func main() {
+	cliFlags, _, err := parseFlags(os.Args[1:])
+	if err != nil {
+		os.Exit(2)
+	}
+
+	if cliFlags.Version {
 		fmt.Printf("halptask v%s\n", Version)
 		os.Exit(0)
 	}
@@ -35,11 +54,11 @@ func main() {
 	}
 
 	targetRepo := cfg.GithubRepo
-	if *repoFlag != "" {
-		targetRepo = *repoFlag
+	if cliFlags.Repo != "" {
+		targetRepo = cliFlags.Repo
 	}
 
-	if *checkUpdateFlag || *updateFlag {
+	if cliFlags.CheckUpdate || cliFlags.Update {
 		fmt.Printf("Checking for updates from %s...\n", targetRepo)
 		rel, err := updater.CheckForUpdate(Version, targetRepo)
 		if err != nil {
@@ -60,7 +79,7 @@ func main() {
 
 		fmt.Printf("A new version of halptask is available: v%s (current: v%s)\n", rel.Version, Version)
 
-		if *updateFlag {
+		if cliFlags.Update {
 			canUpdate, realPath, reason := updater.CanUpdate()
 			if !canUpdate {
 				fmt.Fprintf(os.Stderr, "Cannot update executable at %s: %s\n", realPath, reason)
@@ -79,13 +98,11 @@ func main() {
 	}
 
 	targetFilePath := cfg.DataFile
-	if *filePathFlag != "" {
-		targetFilePath = *filePathFlag
-	} else if *filePathLongFlag != "" {
-		targetFilePath = *filePathLongFlag
+	if cliFlags.FilePath != "" {
+		targetFilePath = cliFlags.FilePath
 	}
 
-	isEncrypted := cfg.Encrypted || *encryptFlag
+	isEncrypted := cfg.Encrypted || cliFlags.Encrypt
 
 	storage := model.NewStorage(targetFilePath, isEncrypted)
 
