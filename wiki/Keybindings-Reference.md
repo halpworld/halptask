@@ -77,6 +77,7 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> d` | Toggle Dashboard | Toggles side stats dashboard panel |
 | `<space> e e` | Toggle Encryption | Toggles AES-256-GCM encryption on file save |
 | `<space> e p` | Set Passphrase | Sets or changes file encryption passphrase |
+| `<space> g i` | Jump to ID | Opens prompt to jump directly to any task/bullet by permanent ID |
 | `<space> w` / `ww` | Save File | Saves current document to disk |
 | `<space> s` | Save File | Saves current document to disk |
 | `<space> /` | Search | Opens interactive search input bar |
@@ -99,6 +100,7 @@ Single and double-character Vim motions available directly in Normal Mode:
 | `l` or `→` | Child / Open fold | Opens fold or jumps to first child node |
 | `gg` | Jump top | Jumps cursor to top of document |
 | `G` | Jump bottom | Jumps cursor to bottom of document |
+| `gi` | Jump to ID | Opens prompt to jump directly to any task/bullet by permanent ID |
 | `ff` | Zoom / Hoist | Hoists focused subtree or returns to full view |
 
 ### Editing & Structure

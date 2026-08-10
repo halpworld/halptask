@@ -22,6 +22,59 @@ func GenerateID() string {
 	return fmt.Sprintf("%x", b)
 }
 
+func (t *Tree) NextID() string {
+	maxID := 0
+	var recurse func(items []*Item)
+	recurse = func(items []*Item) {
+		for _, item := range items {
+			var num int
+			if _, err := fmt.Sscanf(item.ID, "%d", &num); err == nil {
+				if num > maxID {
+					maxID = num
+				}
+			}
+			if len(item.Children) > 0 {
+				recurse(item.Children)
+			}
+		}
+	}
+	recurse(t.Roots)
+	return fmt.Sprintf("%d", maxID+1)
+}
+
+func (t *Tree) EnsureIDs() {
+	maxID := 0
+	var findMax func(items []*Item)
+	findMax = func(items []*Item) {
+		for _, item := range items {
+			var num int
+			if _, err := fmt.Sscanf(item.ID, "%d", &num); err == nil {
+				if num > maxID {
+					maxID = num
+				}
+			}
+			if len(item.Children) > 0 {
+				findMax(item.Children)
+			}
+		}
+	}
+	findMax(t.Roots)
+
+	var assign func(items []*Item)
+	assign = func(items []*Item) {
+		for _, item := range items {
+			if item.ID == "" {
+				maxID++
+				item.ID = fmt.Sprintf("%d", maxID)
+			}
+			if len(item.Children) > 0 {
+				assign(item.Children)
+			}
+		}
+	}
+	assign(t.Roots)
+}
+
 func (t *Tree) SetParents() {
 	for _, root := range t.Roots {
 		t.setParentsRec(root, nil)
@@ -147,7 +200,7 @@ func (t *Tree) FindSiblingsAndIndex(id string) ([]*Item, int) {
 
 func (t *Tree) InsertBelow(targetID, text string) *Item {
 	t.SetParents()
-	newItem := NewItem(GenerateID(), text)
+	newItem := NewItem(t.NextID(), text)
 
 	if len(t.Roots) == 0 || targetID == "" {
 		t.Roots = append(t.Roots, newItem)
@@ -197,7 +250,7 @@ func (t *Tree) InsertBelow(targetID, text string) *Item {
 
 func (t *Tree) InsertAbove(targetID, text string) *Item {
 	t.SetParents()
-	newItem := NewItem(GenerateID(), text)
+	newItem := NewItem(t.NextID(), text)
 
 	if len(t.Roots) == 0 || targetID == "" {
 		t.Roots = append([]*Item{newItem}, t.Roots...)
@@ -246,7 +299,7 @@ func (t *Tree) InsertAbove(targetID, text string) *Item {
 
 func (t *Tree) AddChild(parentID, text string) *Item {
 	t.SetParents()
-	newItem := NewItem(GenerateID(), text)
+	newItem := NewItem(t.NextID(), text)
 	parent := t.FindItem(parentID)
 	if parent == nil {
 		t.Roots = append(t.Roots, newItem)
@@ -610,6 +663,7 @@ func (t *Tree) GetStats() TaskStats {
 
 func (t *Tree) Search(query string) []string {
 	query = strings.ToLower(query)
+	cleanQuery := strings.TrimPrefix(query, "#")
 	var matchedIDs []string
 	if query == "" {
 		return matchedIDs
@@ -617,7 +671,7 @@ func (t *Tree) Search(query string) []string {
 	var recurse func(items []*Item)
 	recurse = func(items []*Item) {
 		for _, item := range items {
-			if strings.Contains(strings.ToLower(item.Text), query) {
+			if strings.Contains(strings.ToLower(item.Text), query) || strings.EqualFold(item.ID, cleanQuery) {
 				matchedIDs = append(matchedIDs, item.ID)
 			}
 			if len(item.Children) > 0 {

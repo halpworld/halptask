@@ -18,6 +18,7 @@ const (
 	ModeHelp
 	ModeTagPicker
 	ModeConfig
+	ModeJumpToID
 )
 
 func (m AppMode) String() string {
@@ -36,6 +37,8 @@ func (m AppMode) String() string {
 		return "TAGS"
 	case ModeConfig:
 		return "CONFIG"
+	case ModeJumpToID:
+		return "JUMP"
 	default:
 		return "NORMAL"
 	}

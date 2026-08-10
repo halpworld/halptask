@@ -18,6 +18,7 @@ type TreeView struct {
 	IndentSpaces int
 	Tree         *model.Tree
 	TagConfigs   []config.TagConfig
+	ShowItemIDs  bool
 }
 
 func NewTreeView() TreeView {
@@ -27,6 +28,7 @@ func NewTreeView() TreeView {
 		IndentSpaces: 2,
 		MatchedIDs:   make(map[string]bool),
 		TagConfigs:   config.GetDefaultTagConfigs(),
+		ShowItemIDs:  true,
 	}
 }
 
@@ -161,6 +163,16 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 			}
 		}
 
+		// Item ID rendering
+		idStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#565f89")).
+			Faint(true)
+
+		var idStr string
+		if tv.ShowItemIDs && item.ID != "" {
+			idStr = idStyle.Render(fmt.Sprintf("#%s ", item.ID))
+		}
+
 		// Text rendering
 		var formattedText string
 		if item.IsTask && item.Status == model.StatusDone {
@@ -180,7 +192,7 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 			formattedText += " " + tagStr
 		}
 
-		lineContent := fmt.Sprintf("%s%s%s%s%s", cursorStr, indentStr, prefix, statusBox, formattedText)
+		lineContent := fmt.Sprintf("%s%s%s%s%s%s", cursorStr, indentStr, prefix, idStr, statusBox, formattedText)
 
 		if isSelected {
 			lineContent = selectedRowStyle.Render(lineContent)

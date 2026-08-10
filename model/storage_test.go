@@ -106,3 +106,66 @@ func TestEncryptionDecryption(t *testing.T) {
 		t.Fatalf("expected error when decrypting with wrong password")
 	}
 }
+
+func TestPermanentIDsPersistence(t *testing.T) {
+	inputMD := `- Root Item <!-- id: 10 -->
+  - Child Task [ ] #work <!-- id: 11 -->
+`
+	tree := ParseMarkdown(inputMD)
+	if len(tree.Roots) != 1 {
+		t.Fatalf("expected 1 root, got %d", len(tree.Roots))
+	}
+	r := tree.Roots[0]
+	if r.ID != "10" {
+		t.Fatalf("expected root ID '10', got %q", r.ID)
+	}
+	if len(r.Children) != 1 {
+		t.Fatalf("expected 1 child, got %d", len(r.Children))
+	}
+	c := r.Children[0]
+	if c.ID != "11" {
+		t.Fatalf("expected child ID '11', got %q", c.ID)
+	}
+
+	serialized := SerializeMarkdown(tree)
+	if !testing.Verbose() {
+		// verify serialized contains id tags
+		if !containsSub(serialized, "<!-- id: 10 -->") || !containsSub(serialized, "<!-- id: 11 -->") {
+			t.Fatalf("serialized markdown missing id tags: %s", serialized)
+		}
+	}
+}
+
+func TestEnsureIDsForUnassignedItems(t *testing.T) {
+	inputMD := `- First unassigned item
+- Second unassigned item <!-- id: 5 -->
+- Third unassigned item
+`
+	tree := ParseMarkdown(inputMD)
+	if len(tree.Roots) != 3 {
+		t.Fatalf("expected 3 roots, got %d", len(tree.Roots))
+	}
+	if tree.Roots[1].ID != "5" {
+		t.Fatalf("expected second root ID '5', got %q", tree.Roots[1].ID)
+	}
+	// Unassigned items should get IDs 6 and 7 (higher than max existing 5)
+	if tree.Roots[0].ID != "6" {
+		t.Fatalf("expected first root ID '6', got %q", tree.Roots[0].ID)
+	}
+	if tree.Roots[2].ID != "7" {
+		t.Fatalf("expected third root ID '7', got %q", tree.Roots[2].ID)
+	}
+}
+
+func containsSub(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && searchString(s, substr))
+}
+
+func searchString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}

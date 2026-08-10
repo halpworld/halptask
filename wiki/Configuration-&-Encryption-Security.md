@@ -18,6 +18,7 @@ encrypted: false
 indent_spaces: 2
 leader_key: " "
 show_which_key: true
+show_item_ids: true # Options: true or false
 theme: default # Options: "default", "tokyonight", "catppuccin", "dracula", "nord"
 ```
 
@@ -33,6 +34,7 @@ theme: default # Options: "default", "tokyonight", "catppuccin", "dracula", "nor
 | `indent_spaces` | Integer | `2` | Number of visual indentation spaces per tree depth level. |
 | `leader_key` | String | `" "` | Primary key trigger for leader menu popup (default `<space>`). |
 | `show_which_key` | Boolean | `true` | Renders WhichKey leader popup menu upon key press. |
+| `show_item_ids` | Boolean | `true` | Renders permanent `#ID` numbers next to items in tree view. |
 | `theme` | String | `default` | Visual TUI color theme palette. |
 
 ---

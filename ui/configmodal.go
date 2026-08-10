@@ -77,6 +77,11 @@ func (cm *ConfigModal) RefreshItems() {
 		showDashboardVal = "[✓] Enabled"
 	}
 
+	showItemIDsVal := "[ ] Disabled"
+	if cm.Config.ShowItemIDs {
+		showItemIDsVal = "[✓] Enabled"
+	}
+
 	encryptedVal := "[ ] Disabled 🔓"
 	if cm.Config.Encrypted {
 		encryptedVal = "[✓] Enabled 🔒"
@@ -93,6 +98,7 @@ func (cm *ConfigModal) RefreshItems() {
 		{Category: "UI & Appearance", Key: "theme", Label: "Color Theme", Type: ConfigItemEnum, Value: cm.Config.Theme, Options: config.AvailableThemes, Description: "Active visual theme palette"},
 		{Category: "UI & Appearance", Key: "show_which_key", Label: "WhichKey Popup", Type: ConfigItemBool, Value: showWhichKeyVal, Description: "Display WhichKey popup menu on leader key"},
 		{Category: "UI & Appearance", Key: "show_dashboard", Label: "Show Dashboard Pane", Type: ConfigItemBool, Value: showDashboardVal, Description: "Display side overview dashboard panel (toggle with <space> d)"},
+		{Category: "UI & Appearance", Key: "show_item_ids", Label: "Show Task/Bullet Numbers", Type: ConfigItemBool, Value: showItemIDsVal, Description: "Display permanent ID numbers next to task/bullet items"},
 		{Category: "UI & Appearance", Key: "indent_spaces", Label: "Indentation Spaces", Type: ConfigItemEnum, Value: fmt.Sprintf("%d", cm.Config.IndentSpaces), Options: []string{"2", "4", "8"}, Description: "Number of spaces per indentation level"},
 
 		// Storage & Security
@@ -211,6 +217,13 @@ func (cm *ConfigModal) activateItem(idx int, dir int) (bool, string, bool) {
 			statusMsg = "Dashboard pane ENABLED"
 		} else {
 			statusMsg = "Dashboard pane DISABLED"
+		}
+	case "show_item_ids":
+		cm.Config.ShowItemIDs = !cm.Config.ShowItemIDs
+		if cm.Config.ShowItemIDs {
+			statusMsg = "Task/Bullet numbers ENABLED"
+		} else {
+			statusMsg = "Task/Bullet numbers DISABLED"
 		}
 	case "indent_spaces":
 		if cm.Config.IndentSpaces == 2 {

@@ -640,4 +640,69 @@ func TestTitleBarVersionAndSpace(t *testing.T) {
 	}
 }
 
+func TestJumpToID(t *testing.T) {
+	cfg := config.DefaultConfig()
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "First Root") // ID: 1
+	r2 := tree.InsertBelow(r1.ID, "Second Root") // ID: 2
+	c1 := tree.AddChild(r2.ID, "Child Item") // ID: 3
+	c2 := tree.AddChild(r2.ID, "Target Nested Item") // ID: 4
+	_ = c1
+
+	r2.Folded = true // Fold parent
+
+	ji := textinput.New()
+	ji.Prompt = "🔢 Jump to ID: #"
+
+	app := AppModel{
+		Config:      cfg,
+		Tree:        tree,
+		Mode:        ModeNormal,
+		JumpInput:   ji,
+		WhichKey:    NewWhichKeyModel(),
+		QuickHelp:   NewQuickHelp(),
+		TreeView:    NewTreeView(),
+		StatusBar:   NewStatusBar(),
+		HelpModal:   NewHelpModal(),
+	}
+	app.ensureValidCursor()
+
+	// 1. Trigger ModeJumpToID via 'gi'
+	m, _ := app.updateNormal(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'g'}})
+	app = m.(AppModel)
+	m, _ = app.updateNormal(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'i'}})
+	app = m.(AppModel)
+
+	if app.Mode != ModeJumpToID {
+		t.Fatalf("expected ModeJumpToID after 'gi', got %v", app.Mode)
+	}
+
+	// 2. Submit ID "4" (target nested inside folded r2)
+	app.JumpInput.SetValue("4")
+	m, _ = app.updateJumpToID(tea.KeyMsg{Type: tea.KeyEnter})
+	app = m.(AppModel)
+
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after submitting jump ID, got %v", app.Mode)
+	}
+	if r2.Folded {
+		t.Fatalf("expected parent r2 to be unfolded after jumping to child")
+	}
+	if app.SelectedID != c2.ID {
+		t.Fatalf("expected SelectedID to be %q, got %q", c2.ID, app.SelectedID)
+	}
+	if !strings.Contains(app.StatusMsg, "Jumped to item #4") {
+		t.Fatalf("expected status message to confirm jump, got %q", app.StatusMsg)
+	}
+
+	// 3. Test jumping to non-existent ID
+	app.Mode = ModeJumpToID
+	app.JumpInput.SetValue("999")
+	m, _ = app.updateJumpToID(tea.KeyMsg{Type: tea.KeyEnter})
+	app = m.(AppModel)
+	if !strings.Contains(app.StatusMsg, "Item ID #999 not found") {
+		t.Fatalf("expected error status msg for missing ID, got %q", app.StatusMsg)
+	}
+}
+
 

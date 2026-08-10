@@ -81,6 +81,7 @@ type AppModel struct {
 
 	TextInput    textinput.Model
 	SearchInput  textinput.Model
+	JumpInput    textinput.Model
 	PromptInput  textinput.Model
 	PromptType   PromptType
 
@@ -132,10 +133,23 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 	si.Prompt = "🔍 "
 	si.Placeholder = "Search bullets..."
 
+	ji := textinput.New()
+	ji.Prompt = "🔢 Jump to ID: #"
+	ji.Placeholder = "1"
+	ji.CharLimit = 32
+
 	pi := textinput.New()
 	pi.Prompt = "🔑 Passphrase: "
 	pi.EchoMode = textinput.EchoPassword
 	pi.EchoCharacter = '•'
+
+	showIDs := true
+	if cfg != nil {
+		showIDs = cfg.ShowItemIDs
+	}
+
+	tv := NewTreeView()
+	tv.ShowItemIDs = showIDs
 
 	m := AppModel{
 		Config:          cfg,
@@ -148,10 +162,11 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		ScrollOffset:    0,
 		TextInput:       ti,
 		SearchInput:     si,
+		JumpInput:       ji,
 		PromptInput:     pi,
 		WhichKey:        NewWhichKeyModel(),
 		QuickHelp:       NewQuickHelp(),
-		TreeView:        NewTreeView(),
+		TreeView:        tv,
 		StatusBar:       NewStatusBar(),
 		HelpModal:       NewHelpModal(),
 		TagModal:        NewTagModal(cfg.Tags),
@@ -396,6 +411,8 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newModel, cmd = m.updateInsert(msg)
 		case ModeSearch:
 			newModel, cmd = m.updateSearch(msg)
+		case ModeJumpToID:
+			newModel, cmd = m.updateJumpToID(msg)
 		case ModePrompt:
 			newModel, cmd = m.updatePrompt(msg)
 		case ModeHelp:
@@ -491,6 +508,11 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				m.CursorIndex = 0
 				m.ensureValidCursor()
 				return m, nil
+			case "gi":
+				m.Mode = ModeJumpToID
+				m.JumpInput.SetValue("")
+				m.JumpInput.Focus()
+				return m, textinput.Blink
 			case "dd":
 				if m.SelectedID != "" {
 					m.pushUndo()
@@ -1141,6 +1163,11 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 	case "  w", "  s":
 		_ = m.saveFile()
 		return true, nil
+	case "  g i", "  j i", "  g g i":
+		m.Mode = ModeJumpToID
+		m.JumpInput.SetValue("")
+		m.JumpInput.Focus()
+		return true, textinput.Blink
 	case "  /":
 		m.Mode = ModeSearch
 		m.SearchInput.Focus()
@@ -1247,6 +1274,54 @@ func (m AppModel) updateSearch(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, cmd
+}
+
+func (m AppModel) updateJumpToID(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch msg.String() {
+	case "esc":
+		m.Mode = ModeNormal
+		m.JumpInput.Blur()
+		return m, nil
+	case "enter":
+		targetID := strings.TrimSpace(m.JumpInput.Value())
+		targetID = strings.TrimPrefix(targetID, "#")
+		m.JumpInput.Blur()
+		if targetID == "" {
+			m.Mode = ModeNormal
+			return m, nil
+		}
+		item := m.Tree.FindItem(targetID)
+		if item != nil {
+			curr := item.Parent
+			for curr != nil {
+				curr.Folded = false
+				curr = curr.Parent
+			}
+			visible := m.getVisibleItems()
+			found := false
+			for i, v := range visible {
+				if v.Item.ID == targetID {
+					m.CursorIndex = i
+					found = true
+					break
+				}
+			}
+			m.ensureValidCursor()
+			if found {
+				m.StatusMsg = fmt.Sprintf("Jumped to item #%s", targetID)
+			} else {
+				m.StatusMsg = fmt.Sprintf("Item #%s is not visible", targetID)
+			}
+		} else {
+			m.StatusMsg = fmt.Sprintf("Item ID #%s not found", targetID)
+		}
+		m.Mode = ModeNormal
+		return m, nil
+	default:
+		m.JumpInput, cmd = m.JumpInput.Update(msg)
+		return m, cmd
+	}
 }
 
 func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -1547,6 +1622,10 @@ func (m AppModel) View() string {
 		mainArea = m.TreeView.Render(visible, m.CursorIndex, m.ScrollOffset)
 	}
 
+	if m.Config != nil {
+		m.TreeView.ShowItemIDs = m.Config.ShowItemIDs
+	}
+
 	var midSection string
 	if m.Mode == ModeInsert {
 		insertBox := lipgloss.NewStyle().
@@ -1564,6 +1643,14 @@ func (m AppModel) View() string {
 			Width(m.Width - 4).
 			Render(m.SearchInput.View())
 		midSection = searchBox
+	} else if m.Mode == ModeJumpToID {
+		jumpBox := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#7aa2f7")).
+			Padding(0, 1).
+			Width(m.Width - 4).
+			Render(m.JumpInput.View())
+		midSection = jumpBox
 	}
 
 	var whichKeyStr string

@@ -27,6 +27,7 @@ type Config struct {
 	LeaderKey       string      `yaml:"leader_key"`
 	ShowWhichKey    bool        `yaml:"show_which_key"`
 	ShowDashboard   bool        `yaml:"show_dashboard"`
+	ShowItemIDs     bool        `yaml:"show_item_ids"`
 	Theme           string      `yaml:"theme"`
 	DefaultItemType string      `yaml:"default_item_type"` // "bullet" or "task"
 	Tags            []TagConfig `yaml:"tags,omitempty"`
@@ -73,6 +74,7 @@ func DefaultConfig() *Config {
 		LeaderKey:       " ",
 		ShowWhichKey:    true,
 		ShowDashboard:   true,
+		ShowItemIDs:     true,
 		Theme:           "default",
 		DefaultItemType: "bullet",
 		Tags:            GetDefaultTagConfigs(),

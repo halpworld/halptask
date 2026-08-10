@@ -37,7 +37,8 @@
 
 ## ✨ Core Highlights
 
-- **Vim Native Motion Engine**: Seamless `j`/`k`/`h`/`l`, `gg`/`G`, `oo`/`oc`, `dd`, `x`, `u`, `ctrl+r`, `tab`/`shift+tab` tree editing.
+- **Vim Native Motion Engine**: Seamless `j`/`k`/`h`/`l`, `gg`/`G`, `gi` (jump to ID), `oo`/`oc`, `dd`, `x`, `u`, `ctrl+r`, `tab`/`shift+tab` tree editing.
+- **Permanent Task/Bullet Numbering**: Each item has a persistent ID (`<!-- id: # -->`). Instantly jump to any node with `gi` or `<space> g i`.
 - **Leader Key & WhichKey System (`<space>`)**: Non-intrusive popup menu guide that updates in real time as you type key sequences.
 - **Hierarchical Outliner & Folding**: Collapse subtrees (`zc`), expand (`zo`), toggle (`za`), or fold everything (`zM`/`zR`) with dynamic child counters.
 - **Task Management**: Convert bullets into rich tasks with status cycling: `[ ]` Todo ➔ `[~]` In Progress ➔ `[x]` Done.

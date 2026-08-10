@@ -15,9 +15,11 @@ HalpTask is built around authentic Vim navigation and manipulation concepts.
  h / l : Parent/Child oc : New child (subtask)  za      : Toggle fold
  gg    : Jump Top    dd : Delete subtree        zM / zR : Close/Open all
  G     : Jump Bottom J/K: Move down/up          ff      : Hoist / Zoom view
+ gi    : Jump to ID  u/Ctrl+r: Undo/Redo        <space>gi: Jump to ID
 ```
 
 ### Motion Combos to Master:
+- **`gi` or `<space> g i`**: Jump directly to any task or bullet item by its permanent `#ID` number!
 - **`oo` vs `oc`**: `oo` creates a sibling bullet directly below; `oc` creates a child subtask underneath current selection.
 - **`i` / `a` / `e`**: Enter insert mode at the current node text.
 - **`c`**: Clear the node text entirely and instantly enter insert mode.

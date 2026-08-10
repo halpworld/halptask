@@ -59,12 +59,13 @@ func (s *Storage) Load(passphrase string) (*Tree, error) {
 	if _, err := os.Stat(s.FilePath); os.IsNotExist(err) {
 		// Return empty default tree with a sample bullet
 		tree := NewTree()
-		root := NewItem(GenerateID(), "Welcome to HalpTask! Press ? for help or <space> for leader menu.")
-		child1 := NewTask(GenerateID(), "Try toggling tasks with 't'", StatusTodo)
-		child2 := NewTask(GenerateID(), "Mark task in-progress with 'ts' or leader 't p'", StatusInProgress)
-		child3 := NewTask(GenerateID(), "Mark done with 'ts' or leader 't d'", StatusDone)
+		root := NewItem("1", "Welcome to HalpTask! Press ? for help or <space> for leader menu.")
+		child1 := NewTask("2", "Try toggling tasks with 't'", StatusTodo)
+		child2 := NewTask("3", "Mark task in-progress with 'ts' or leader 't p'", StatusInProgress)
+		child3 := NewTask("4", "Mark done with 'ts' or leader 't d'", StatusDone)
 		root.Children = append(root.Children, child1, child2, child3)
 		tree.Roots = append(tree.Roots, root)
+		tree.EnsureIDs()
 		tree.SetParents()
 		return tree, nil
 	}
@@ -144,6 +145,17 @@ func ParseMarkdown(content string) *Tree {
 
 		lineText := strings.TrimSpace(trimmedLine)
 
+		// Check id tag <!-- id: XYZ -->
+		var explicitID string
+		if idx := strings.Index(lineText, "<!-- id:"); idx != -1 {
+			endIdx := strings.Index(lineText[idx:], "-->")
+			if endIdx != -1 {
+				idPart := lineText[idx+8 : idx+endIdx]
+				explicitID = strings.TrimSpace(idPart)
+				lineText = strings.TrimSpace(lineText[:idx] + lineText[idx+endIdx+3:])
+			}
+		}
+
 		// Check fold tag
 		folded := false
 		if strings.Contains(lineText, "<!-- fold -->") || strings.Contains(lineText, "<!-- folded -->") {
@@ -155,7 +167,7 @@ func ParseMarkdown(content string) *Tree {
 
 		// Strip leading bullet markers ('-', '*', '•')
 		var item *Item
-		id := GenerateID()
+		id := explicitID
 		var text string
 
 		if strings.HasPrefix(lineText, "- [ ] ") || strings.HasPrefix(lineText, "* [ ] ") {
@@ -204,6 +216,7 @@ func ParseMarkdown(content string) *Tree {
 		}
 	}
 
+	tree.EnsureIDs()
 	tree.SetParents()
 	return tree
 }
@@ -262,6 +275,9 @@ func SerializeMarkdown(tree *Tree) string {
 
 			if item.Folded {
 				builder.WriteString(" <!-- fold -->")
+			}
+			if item.ID != "" {
+				builder.WriteString(fmt.Sprintf(" <!-- id: %s -->", item.ID))
 			}
 			builder.WriteString("\n")
 

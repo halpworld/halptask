@@ -54,6 +54,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "s"}, KeyString: "s", Label: "save file", Category: "Leader"},
 		{Keys: []string{" ", "e", "e"}, KeyString: "e", Label: "toggle encryption", Category: "Encrypt"},
 		{Keys: []string{" ", "e", "p"}, KeyString: "p", Label: "set passphrase", Category: "Encrypt"},
+		{Keys: []string{" ", "g", "i"}, KeyString: "gi", Label: "jump to item by ID", Category: "Nav"},
 		{Keys: []string{" ", "/"}, KeyString: "/", Label: "search items", Category: "Leader"},
 		{Keys: []string{" ", "?"}, KeyString: "?", Label: "show help", Category: "Leader"},
 		{Keys: []string{" ", "U"}, KeyString: "U", Label: "check/install update", Category: "Leader"},
@@ -65,6 +66,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{"h"}, KeyString: "h", Label: "close fold / parent", Category: "Nav"},
 		{Keys: []string{"l"}, KeyString: "l", Label: "open fold / child", Category: "Nav"},
 		{Keys: []string{"g", "g"}, KeyString: "gg", Label: "go to top", Category: "Nav"},
+		{Keys: []string{"g", "i"}, KeyString: "gi", Label: "jump to item by ID", Category: "Nav"},
 		{Keys: []string{"G"}, KeyString: "G", Label: "go to bottom", Category: "Nav"},
 
 		{Keys: []string{"o", "o"}, KeyString: "oo", Label: "new bullet below", Category: "Edit"},
