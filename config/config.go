@@ -62,7 +62,7 @@ func DefaultConfig() *Config {
 	if err != nil {
 		home = "."
 	}
-	defaultData := filepath.Join(home, ".config", "halptask", "data.txt")
+	defaultData := filepath.Join(home, ".config", "halptask", "data.pb")
 	return &Config{
 		AutoSave:        true,
 		CheckUpdates:    true,
@@ -138,6 +138,21 @@ func LoadConfig() (*Config, error) {
 	}
 	if len(cfg.Tags) == 0 {
 		cfg.Tags = GetDefaultTagConfigs()
+	}
+
+	// Sanitize data_file if it erroneously points to config.yaml or a YAML file
+	lowerDataFile := strings.ToLower(cfg.DataFile)
+	if strings.Contains(lowerDataFile, "config.yaml") || strings.HasSuffix(lowerDataFile, ".yaml") || strings.HasSuffix(lowerDataFile, ".yml") {
+		pbPath := filepath.Join(dir, "data.pb")
+		txtPath := filepath.Join(dir, "data.txt")
+		if _, err := os.Stat(pbPath); err == nil {
+			cfg.DataFile = pbPath
+		} else if _, err := os.Stat(txtPath); err == nil {
+			cfg.DataFile = txtPath
+		} else {
+			cfg.DataFile = pbPath
+		}
+		_ = SaveConfig(cfg)
 	}
 	return cfg, nil
 }

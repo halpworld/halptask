@@ -55,6 +55,84 @@ func IsEncryptedFile(filePath string) (bool, error) {
 	return false, scanner.Err()
 }
 
+func GetMigratedFilePath(oldPath string) string {
+	ext := strings.ToLower(filepath.Ext(oldPath))
+	if ext == ".pb" || ext == ".halp" || ext == ".yaml" || ext == ".yml" || ext == ".json" {
+		return oldPath
+	}
+	if ext == ".txt" || ext == ".md" {
+		return oldPath[:len(oldPath)-len(ext)] + ".pb"
+	}
+	return oldPath + ".pb"
+}
+
+func isNonDataConfigFile(filePath string) bool {
+	lower := strings.ToLower(filePath)
+	return strings.HasSuffix(lower, ".yaml") ||
+		strings.HasSuffix(lower, ".yml") ||
+		strings.HasSuffix(lower, ".json") ||
+		strings.Contains(lower, "config.yaml")
+}
+
+func (s *Storage) MigrateIfNeeded(passphrase string) (bool, string, error) {
+	if isNonDataConfigFile(s.FilePath) {
+		return false, s.FilePath, nil
+	}
+
+	if _, err := os.Stat(s.FilePath); os.IsNotExist(err) {
+		return false, s.FilePath, nil
+	}
+
+	rawBytes, err := os.ReadFile(s.FilePath)
+	if err != nil {
+		return false, s.FilePath, err
+	}
+
+	content := string(rawBytes)
+	if strings.HasPrefix(strings.TrimSpace(content), EncryptedHeader) {
+		if passphrase == "" {
+			return false, s.FilePath, errors.New("passphrase required for encrypted file")
+		}
+		decrypted, err := decryptContent(content, passphrase)
+		if err != nil {
+			return false, s.FilePath, err
+		}
+		rawBytes = []byte(decrypted)
+		content = decrypted
+	}
+
+	// Check if already valid Protobuf
+	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && (len(tree.Roots) > 0 || len(rawBytes) < 50) {
+		return false, s.FilePath, nil
+	}
+
+	// Legacy Markdown detected -> Migrate to Protobuf with updated .pb extension
+	tree := ParseMarkdown(content)
+	newPath := GetMigratedFilePath(s.FilePath)
+
+	// Create backup of old file
+	bakPath := s.FilePath + ".bak"
+	if err := os.WriteFile(bakPath, []byte(content), 0644); err != nil {
+		return false, s.FilePath, fmt.Errorf("failed to create migration backup: %w", err)
+	}
+
+	// Save migrated binary payload to new .pb file path
+	targetStorage := NewStorage(newPath, s.Encrypted)
+	if err := targetStorage.Save(tree, passphrase); err != nil {
+		return false, s.FilePath, fmt.Errorf("failed to save migrated protobuf file: %w", err)
+	}
+
+	oldPath := s.FilePath
+	s.FilePath = newPath
+
+	// Remove old legacy file if different path
+	if oldPath != newPath {
+		_ = os.Remove(oldPath)
+	}
+
+	return true, newPath, nil
+}
+
 func (s *Storage) Load(passphrase string) (*Tree, error) {
 	if _, err := os.Stat(s.FilePath); os.IsNotExist(err) {
 		// Return empty default tree with a sample bullet
@@ -70,12 +148,20 @@ func (s *Storage) Load(passphrase string) (*Tree, error) {
 		return tree, nil
 	}
 
-	data, err := os.ReadFile(s.FilePath)
+	// Execute migration if legacy format detected
+	migrated, newPath, err := s.MigrateIfNeeded(passphrase)
+	if err != nil && !errors.Is(err, ErrIncorrectPassphrase) {
+		// If migration fails non-fatally, fall back to direct file read
+		_ = migrated
+		_ = newPath
+	}
+
+	rawBytes, err := os.ReadFile(s.FilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	content := string(data)
+	content := string(rawBytes)
 	if strings.HasPrefix(strings.TrimSpace(content), EncryptedHeader) {
 		if passphrase == "" {
 			return nil, errors.New("passphrase required for encrypted file")
@@ -84,24 +170,37 @@ func (s *Storage) Load(passphrase string) (*Tree, error) {
 		if err != nil {
 			return nil, err
 		}
+		rawBytes = []byte(decrypted)
 		content = decrypted
 	}
 
+	// First try decoding as Protobuf
+	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && (len(tree.Roots) > 0 || len(rawBytes) < 50) {
+		return tree, nil
+	}
+
+	// Fallback to legacy Markdown parsing
 	return ParseMarkdown(content), nil
 }
 
 func (s *Storage) Save(tree *Tree, passphrase string) error {
-	content := SerializeMarkdown(tree)
+	payloadBytes, err := SerializeProtobuf(tree)
+	if err != nil {
+		return fmt.Errorf("failed to serialize protobuf: %w", err)
+	}
 
+	var content string
 	if s.Encrypted {
 		if passphrase == "" {
 			return errors.New("passphrase required to encrypt file")
 		}
-		encrypted, err := encryptContent(content, passphrase)
+		encrypted, err := encryptContent(string(payloadBytes), passphrase)
 		if err != nil {
 			return fmt.Errorf("encryption error: %w", err)
 		}
 		content = encrypted
+	} else {
+		content = string(payloadBytes)
 	}
 
 	dir := filepath.Dir(s.FilePath)
