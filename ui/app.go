@@ -173,7 +173,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		ConfigModal:     NewConfigModal(cfg),
 		Width:           80,
 		Height:          24,
-		Version:         "0.0.5",
+		Version:         "0.0.6",
 		UpdateAvailable: false,
 		IsUpdating:      false,
 	}
