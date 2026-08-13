@@ -64,10 +64,11 @@ brews:
   - name: halptask
     ids:
       - default
+    skip_upload: auto
     repository:
       owner: arkalon76
       name: homebrew-tap
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     homepage: "https://github.com/arkalon76/halptask"
     description: "A high-performance keyboard-driven TUI bullet point outliner and task manager"
     license: "MIT"
