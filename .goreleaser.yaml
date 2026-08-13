@@ -60,8 +60,10 @@ nfpms:
       {{- else if eq .Arch "arm64" }}arm64
       {{- else }}{{ .Arch }}{{ end }}
 
-brews:
+homebrews:
   - name: halptask
+    ids:
+      - default
     repository:
       owner: arkalon76
       name: homebrew-tap
