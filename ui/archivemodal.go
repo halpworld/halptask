@@ -289,8 +289,9 @@ func (m *ArchiveModal) Render(width, height int) string {
 			if maxLen < 10 {
 				maxLen = 10
 			}
-			if len(text) > maxLen {
-				text = text[:maxLen-3] + "..."
+			runes := []rune(text)
+			if len(runes) > maxLen && maxLen > 3 {
+				text = string(runes[:maxLen-3]) + "..."
 			}
 
 			lineStr := fmt.Sprintf("%s%s %s", prefix, icon, text)

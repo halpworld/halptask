@@ -82,6 +82,9 @@ func IsProtobufData(rawBytes []byte, filePath string) bool {
 	if len(rawBytes) >= 2 && rawBytes[0] == 0x08 && rawBytes[1] == 0x01 {
 		return true
 	}
+	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil {
+		return true
+	}
 	return false
 }
 
@@ -198,7 +201,7 @@ func (s *Storage) Load(passphrase string) (*Tree, error) {
 		return tree, nil
 	}
 
-	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && len(tree.Roots) > 0 {
+	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil {
 		return tree, nil
 	}
 
@@ -314,7 +317,7 @@ func ParseMarkdown(content string) *Tree {
 			text = lineText[2:]
 			item = NewItem(id, text)
 		} else if strings.HasPrefix(lineText, "• ") {
-			text = lineText[3:]
+			text = lineText[len("• "):]
 			item = NewItem(id, text)
 		} else {
 			text = lineText

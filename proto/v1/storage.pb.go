@@ -154,6 +154,9 @@ func UnmarshalTreeProto(data []byte) (*TreeProto, error) {
 
 		switch fieldNum {
 		case 1: // schema_version
+			if wireType != 0 {
+				return nil, fmt.Errorf("unexpected wire type %d for varint field", wireType)
+			}
 			val, n, err := readVarint(data[offset:])
 			if err != nil {
 				return nil, err
@@ -161,6 +164,9 @@ func UnmarshalTreeProto(data []byte) (*TreeProto, error) {
 			offset += n
 			t.SchemaVersion = uint32(val)
 		case 2: // roots
+			if wireType != 2 {
+				return nil, fmt.Errorf("unexpected wire type %d for bytes field", wireType)
+			}
 			itemData, n, err := readBytes(data[offset:])
 			if err != nil {
 				return nil, err
@@ -172,6 +178,9 @@ func UnmarshalTreeProto(data []byte) (*TreeProto, error) {
 			}
 			t.Roots = append(t.Roots, item)
 		case 3: // last_modified
+			if wireType != 0 {
+				return nil, fmt.Errorf("unexpected wire type %d for varint field", wireType)
+			}
 			val, n, err := readVarint(data[offset:])
 			if err != nil {
 				return nil, err
@@ -357,10 +366,10 @@ func readBytes(buf []byte) ([]byte, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	total := n + int(length)
-	if len(buf) < total {
+	if length > uint64(len(buf)-n) {
 		return nil, 0, io.ErrUnexpectedEOF
 	}
+	total := n + int(length)
 	return buf[n:total], total, nil
 }
 

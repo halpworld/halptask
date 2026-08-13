@@ -232,8 +232,9 @@ func (tm *TagModal) Render(width, height int) string {
 	var sb strings.Builder
 	sb.WriteString(titleStyle.Render("🏷️  Manage Task Tags & Labels") + "\n")
 	itemTitle := tm.Item.Text
-	if len(itemTitle) > 40 {
-		itemTitle = itemTitle[:37] + "..."
+	runes := []rune(itemTitle)
+	if len(runes) > 40 {
+		itemTitle = string(runes[:37]) + "..."
 	}
 	sb.WriteString(subTitleStyle.Render(fmt.Sprintf("Item: \"%s\"", itemTitle)) + "\n\n")
 

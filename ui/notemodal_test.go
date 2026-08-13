@@ -102,3 +102,24 @@ func TestLinkReplacementNoSubstringCorruption(t *testing.T) {
 		}
 	}
 }
+
+func TestNoteModalVerticalArrowNavigation(t *testing.T) {
+	nm := NewNoteModal(80, 24)
+	tree := model.NewTree()
+	item := model.NewItem("1", "Item with no links")
+	item.Note = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6"
+	nm.SetItem(item, tree)
+
+	// Note has no task links
+	if len(nm.Links) != 0 {
+		t.Fatalf("expected 0 links, got %d", len(nm.Links))
+	}
+
+	// Pressing Down arrow key in view mode should update viewport position cleanly without crashing
+	nm.Update(tea.KeyMsg{Type: tea.KeyDown})
+	nm.Update(tea.KeyMsg{Type: tea.KeyUp})
+
+	if nm.Mode != NoteModeView {
+		t.Fatalf("expected NoteModeView after arrow navigation, got %v", nm.Mode)
+	}
+}

@@ -44,6 +44,7 @@ func (t *Tree) NextID() string {
 }
 
 func (t *Tree) EnsureIDs() {
+	seen := make(map[string]bool)
 	maxID := 0
 	var findMax func(items []*Item)
 	findMax = func(items []*Item) {
@@ -64,10 +65,11 @@ func (t *Tree) EnsureIDs() {
 	var assign func(items []*Item)
 	assign = func(items []*Item) {
 		for _, item := range items {
-			if item.ID == "" {
+			if item.ID == "" || seen[item.ID] {
 				maxID++
 				item.ID = fmt.Sprintf("%d", maxID)
 			}
+			seen[item.ID] = true
 			if len(item.Children) > 0 {
 				assign(item.Children)
 			}

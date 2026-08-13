@@ -360,8 +360,10 @@ func (cm *ConfigModal) Render(width, height int) string {
 	if cm.SelectedIndex >= 0 && cm.SelectedIndex < len(cm.Items) {
 		descText := "💡 " + cm.Items[cm.SelectedIndex].Description
 		if lipgloss.Width(descText) > modalWidth-4 {
-			if len(descText) > modalWidth-4 {
-				descText = descText[:modalWidth-7] + "..."
+			runes := []rune(descText)
+			maxR := modalWidth - 4
+			if len(runes) > maxR && maxR > 3 {
+				descText = string(runes[:maxR-3]) + "..."
 			}
 		}
 		sb.WriteString(descStyle.Render(descText) + "\n")

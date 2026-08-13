@@ -151,9 +151,10 @@ func LoadConfig() (*Config, error) {
 		cfg.Tags = GetDefaultTagConfigs()
 	}
 
-	// Sanitize data_file if it erroneously points to config.yaml or a YAML file
+	// Sanitize data_file if it erroneously points to config.yaml
 	lowerDataFile := strings.ToLower(cfg.DataFile)
-	if strings.Contains(lowerDataFile, "config.yaml") || strings.HasSuffix(lowerDataFile, ".yaml") || strings.HasSuffix(lowerDataFile, ".yml") {
+	baseDataFile := filepath.Base(lowerDataFile)
+	if baseDataFile == "config.yaml" || baseDataFile == "config.yml" {
 		pbPath := filepath.Join(dir, "data.pb")
 		txtPath := filepath.Join(dir, "data.txt")
 		if _, err := os.Stat(pbPath); err == nil {

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"path/filepath"
 	"testing"
 )
 
@@ -216,3 +217,48 @@ func searchString(s, substr string) bool {
 	}
 	return false
 }
+
+func TestEmptyProtobufTreeLoad(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "data.txt") // non .pb extension
+	storage := NewStorage(filePath, false)
+
+	emptyTree := NewTree()
+	err := storage.Save(emptyTree, "")
+	if err != nil {
+		t.Fatalf("failed to save empty tree: %v", err)
+	}
+
+	loadedTree, err := storage.Load("")
+	if err != nil {
+		t.Fatalf("failed to load empty tree: %v", err)
+	}
+	if len(loadedTree.Roots) != 0 {
+		t.Fatalf("expected 0 roots for empty protobuf tree, got %d", len(loadedTree.Roots))
+	}
+}
+
+func TestParseMarkdownUTF8Bullet(t *testing.T) {
+	content := "• UTF-8 Bullet Test"
+	tree := ParseMarkdown(content)
+	if len(tree.Roots) != 1 {
+		t.Fatalf("expected 1 root, got %d", len(tree.Roots))
+	}
+	if tree.Roots[0].Text != "UTF-8 Bullet Test" {
+		t.Fatalf("expected text 'UTF-8 Bullet Test', got %q", tree.Roots[0].Text)
+	}
+}
+
+func TestEnsureIDsDeduplication(t *testing.T) {
+	tree := NewTree()
+	i1 := NewItem("1", "First Item")
+	i2 := NewItem("1", "Duplicate ID Item") // Duplicate ID
+	tree.Roots = append(tree.Roots, i1, i2)
+
+	tree.EnsureIDs()
+
+	if tree.Roots[0].ID == tree.Roots[1].ID {
+		t.Fatalf("expected distinct IDs, got duplicate %q", tree.Roots[0].ID)
+	}
+}
+

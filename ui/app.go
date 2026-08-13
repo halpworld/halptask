@@ -116,6 +116,8 @@ type AppModel struct {
 
 	EditingNewItem bool
 	NewItemID      string
+
+	InitCmd tea.Cmd
 }
 
 func (m *AppModel) getVisibleItems() []model.VisibleItem {
@@ -196,6 +198,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		m.Mode = ModePrompt
 		m.PromptType = PromptPassphraseLoad
 		m.PromptInput.Focus()
+		m.InitCmd = textinput.Blink
 		return m, textinput.Blink
 	}
 
@@ -204,9 +207,11 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 	if err == nil {
 		m.Tree = tree
 		m.ensureValidCursor()
-		if storage.FilePath != cfg.DataFile {
-			cfg.DataFile = storage.FilePath
-			_ = config.SaveConfig(cfg)
+		if strings.HasSuffix(cfg.DataFile, ".txt") || strings.HasSuffix(cfg.DataFile, ".md") {
+			if model.GetMigratedFilePath(cfg.DataFile) == storage.FilePath {
+				cfg.DataFile = storage.FilePath
+				_ = config.SaveConfig(cfg)
+			}
 		}
 	}
 
@@ -395,8 +400,15 @@ func (m *AppModel) restoreArchivedItem(item *model.Item) {
 }
 
 func (m AppModel) Init() tea.Cmd {
+	var cmds []tea.Cmd
+	if m.InitCmd != nil {
+		cmds = append(cmds, m.InitCmd)
+	}
 	if config.ShouldCheckForUpdate(m.Config) {
-		return checkUpdateCmd(m.Version, m.Config.GithubRepo)
+		cmds = append(cmds, checkUpdateCmd(m.Version, m.Config.GithubRepo))
+	}
+	if len(cmds) > 0 {
+		return tea.Batch(cmds...)
 	}
 	return nil
 }
@@ -512,6 +524,9 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Mode = ModeNormal
 				return m, openConfigEditorCmd()
 			}
+			if m.Config != nil {
+				m.TreeView.ShowItemIDs = m.Config.ShowItemIDs
+			}
 			if closeModal {
 				m.Mode = ModeNormal
 			}
@@ -548,9 +563,10 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					_ = m.saveFile()
 					return m, nil
 				case "q":
+					m.Mode = ModeNormal
 					m.PendingAutoSave = true
 					_ = m.saveFile()
-					return m, tea.Quit
+					return m, nil
 				}
 			}
 
@@ -1424,6 +1440,10 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 	case "  e e": // Toggle encryption
 		m.Storage.Encrypted = !m.Storage.Encrypted
 		m.ArchiveStore.Encrypted = m.Storage.Encrypted
+		if m.Config != nil {
+			m.Config.Encrypted = m.Storage.Encrypted
+			_ = config.SaveConfig(m.Config)
+		}
 		if m.Storage.Encrypted && m.Passphrase == "" {
 			m.Mode = ModePrompt
 			m.PromptType = PromptPassphraseSet
@@ -1682,6 +1702,11 @@ func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		} else if m.PromptType == PromptPassphraseSet {
 			m.Passphrase = val
 			m.Storage.Encrypted = true
+			m.ArchiveStore.Encrypted = true
+			if m.Config != nil {
+				m.Config.Encrypted = true
+				_ = config.SaveConfig(m.Config)
+			}
 			m.Mode = ModeNormal
 			_ = m.saveFile()
 			m.StatusMsg = "Passphrase set & encrypted 🔒"
@@ -1691,6 +1716,15 @@ func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.PromptType == PromptPassphraseLoad {
 			// Quit if user cancels load prompt
 			return m, tea.Quit
+		}
+		if m.PromptType == PromptPassphraseSet && m.Passphrase == "" {
+			m.Storage.Encrypted = false
+			m.ArchiveStore.Encrypted = false
+			if m.Config != nil {
+				m.Config.Encrypted = false
+				_ = config.SaveConfig(m.Config)
+			}
+			m.StatusMsg = "Encryption cancelled"
 		}
 		m.Mode = ModeNormal
 		return m, nil

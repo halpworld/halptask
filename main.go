@@ -106,19 +106,13 @@ func main() {
 
 	storage := model.NewStorage(targetFilePath, isEncrypted)
 
-	appModel, initCmd := ui.InitialModel(cfg, storage)
+	appModel, _ := ui.InitialModel(cfg, storage)
 
 	p := tea.NewProgram(
 		appModel,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
-
-	if initCmd != nil {
-		go func() {
-			// Exec initial command if any
-		}()
-	}
 
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error running halptask: %v\n", err)

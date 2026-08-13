@@ -870,3 +870,90 @@ func TestAppNoteAutoSaveOnEdit(t *testing.T) {
 	}
 }
 
+func TestNoteModalQuitReturnsToNormalMode(t *testing.T) {
+	app := AppModel{
+		Config:    config.DefaultConfig(),
+		Mode:      ModeNote,
+		NoteModal: NewNoteModal(80, 24),
+	}
+	app.NoteModal.Mode = NoteModeView
+
+	m, cmd := app.Update(tea.KeyMsg{Runes: []rune{'q'}, Type: tea.KeyRunes})
+	res := m.(AppModel)
+
+	if res.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after pressing 'q' in NoteModeView, got %v", res.Mode)
+	}
+	if cmd != nil {
+		t.Fatalf("expected nil cmd (no quit), got %v", cmd)
+	}
+}
+
+func TestConfigModalShowItemIDsLiveReflection(t *testing.T) {
+	cfg := config.DefaultConfig()
+	cfg.ShowItemIDs = true
+	app := AppModel{
+		Config:      cfg,
+		Mode:        ModeConfig,
+		ConfigModal: NewConfigModal(cfg),
+		TreeView:    NewTreeView(),
+	}
+	app.TreeView.ShowItemIDs = true
+
+	// Toggle show_item_ids in ConfigModal
+	app.ConfigModal.SelectedIndex = 7 // show_item_ids item index
+	app.ConfigModal.Update(tea.KeyMsg{Type: tea.KeySpace})
+
+	// Close config modal
+	m, _ := app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	res := m.(AppModel)
+
+	if res.TreeView.ShowItemIDs != res.Config.ShowItemIDs {
+		t.Fatalf("expected TreeView.ShowItemIDs (%v) to match Config.ShowItemIDs (%v)", res.TreeView.ShowItemIDs, res.Config.ShowItemIDs)
+	}
+}
+
+func TestEncryptionToggleConfigSync(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "data.pb")
+	cfg := config.DefaultConfig()
+	cfg.Encrypted = false
+
+	storage := model.NewStorage(filePath, false)
+	archiveStore := model.NewArchiveStore(filepath.Join(tempDir, "archive.dat"), false)
+
+	app := AppModel{
+		Config:       cfg,
+		Storage:      storage,
+		ArchiveStore: archiveStore,
+		ArchiveModal: NewArchiveModal(archiveStore),
+		Tree:         model.NewTree(),
+		WhichKey:     NewWhichKeyModel(),
+		PromptInput:  textinput.New(),
+	}
+
+	// Toggle encryption via leader shortcut '<space> e e'
+	executed, _ := app.tryExecuteKeyBinding([]string{" ", "e", "e"})
+	if !executed {
+		t.Fatalf("expected '<space> e e' to be executed")
+	}
+
+	if !app.Config.Encrypted {
+		t.Fatalf("expected Config.Encrypted to be true after toggling encryption")
+	}
+	if app.Mode != ModePrompt || app.PromptType != PromptPassphraseSet {
+		t.Fatalf("expected ModePrompt PromptPassphraseSet when passphrase is empty")
+	}
+
+	// Cancel passphrase prompt with Esc
+	m, _ := app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	res := m.(AppModel)
+
+	if res.Storage.Encrypted {
+		t.Fatalf("expected Storage.Encrypted to revert to false after cancelling prompt")
+	}
+	if res.Config.Encrypted {
+		t.Fatalf("expected Config.Encrypted to revert to false after cancelling prompt")
+	}
+}
+

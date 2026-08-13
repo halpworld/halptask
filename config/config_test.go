@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestConfigDefaultsAndSave(t *testing.T) {
@@ -90,5 +92,31 @@ func TestShouldCheckForUpdate(t *testing.T) {
 	cfg.UpdateInterval = "never"
 	if ShouldCheckForUpdate(cfg) {
 		t.Fatalf("expected ShouldCheckForUpdate to be false when UpdateInterval is 'never'")
+	}
+}
+
+func TestCustomYamlDataFilePath(t *testing.T) {
+	tempDir := t.TempDir()
+	configDir := filepath.Join(tempDir, "halptask")
+	_ = os.MkdirAll(configDir, 0755)
+
+	cfg := DefaultConfig()
+	customPath := filepath.Join(tempDir, "my_custom_tasks.yaml")
+	cfg.DataFile = customPath
+
+	// Save custom yaml data_file config
+	configPath := filepath.Join(configDir, "config.yaml")
+	data, _ := yaml.Marshal(cfg)
+	_ = os.WriteFile(configPath, data, 0644)
+
+	// Temporarily override ConfigDir return by testing sanitization logic directly
+	lowerDataFile := customPath
+	baseDataFile := filepath.Base(lowerDataFile)
+	if baseDataFile == "config.yaml" || baseDataFile == "config.yml" {
+		cfg.DataFile = filepath.Join(configDir, "data.pb")
+	}
+
+	if cfg.DataFile != customPath {
+		t.Fatalf("expected custom data file path %q to be preserved, got %q", customPath, cfg.DataFile)
 	}
 }

@@ -443,19 +443,19 @@ func (nm *NoteModal) Update(msg tea.Msg) (*NoteModal, tea.Cmd, string) {
 				nm.StatusMsg = "Editing note (Esc or Ctrl+S to save)"
 				return nm, textarea.Blink, ""
 
-			case "tab", "l", "n", "right", "down":
+			case "tab", "l", "n", "right":
 				if len(nm.Links) > 0 {
 					nm.ActiveLink = (nm.ActiveLink + 1) % len(nm.Links)
 					nm.refreshLinksAndRender()
+					return nm, nil, ""
 				}
-				return nm, nil, ""
 
-			case "shift+tab", "h", "p", "left", "up":
+			case "shift+tab", "h", "p", "left":
 				if len(nm.Links) > 0 {
 					nm.ActiveLink = (nm.ActiveLink - 1 + len(nm.Links)) % len(nm.Links)
 					nm.refreshLinksAndRender()
+					return nm, nil, ""
 				}
-				return nm, nil, ""
 
 			case "enter":
 				if len(nm.Links) > 0 && nm.ActiveLink >= 0 && nm.ActiveLink < len(nm.Links) {
