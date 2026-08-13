@@ -60,7 +60,7 @@ nfpms:
       {{- else if eq .Arch "arm64" }}arm64
       {{- else }}{{ .Arch }}{{ end }}
 
-homebrews:
+brews:
   - name: halptask
     ids:
       - default
