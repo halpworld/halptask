@@ -187,7 +187,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		NoteModal:       NewNoteModal(80, 24),
 		Width:           80,
 		Height:          24,
-		Version:         "0.0.6",
+		Version:         "0.0.7",
 		UpdateAvailable: false,
 		IsUpdating:      false,
 	}
