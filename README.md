@@ -86,6 +86,14 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
 
 ## 📦 Alternative Installation Methods
 
+### 🍺 Homebrew (macOS & Linux)
+
+Install via Homebrew tap:
+
+```bash
+brew install arkalon76/tap/halptask
+```
+
 ### Standalone Binary Download
 
 Download direct executable binaries for your OS and Architecture directly from [GitHub Releases](https://github.com/arkalon76/halptask/releases/latest):

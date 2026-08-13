@@ -8,6 +8,12 @@ Welcome to HalpTask! This guide will get you up and running in under 5 minutes, 
 
 Choose the installation method best suited for your platform:
 
+### 🍺 Homebrew (macOS & Linux)
+
+```bash
+brew install arkalon76/tap/halptask
+```
+
 ### ⚡ Automatic Script Install (macOS & Linux)
 
 ```bash
