@@ -65,7 +65,7 @@ func (h *HelpModal) Render(width, height int) string {
 				{"i / a / e", "Edit current bullet text"},
 				{"c", "Clear line text & enter insert mode"},
 				{"t", "Toggle bullet into task / Cycle status"},
-				{"fo / tf / <space> t f", "Toggle / Exit Focus Mode 🎯"},
+				{"Esc / q / fo / tf", "Exit Focus Mode / Clear focus 🎯"},
 				{"N / <space> n", "Open / edit task markdown note 📝"},
 				{"<space> t D", "Toggle default item type (bullet/task)"},
 				{"T / <space> t a", "Manage task tags & labels (emojis & colors)"},

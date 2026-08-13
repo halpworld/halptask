@@ -45,12 +45,11 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> t h` | `👁️` | Filter completed | Toggles hiding/showing completed `[x]` tasks |
 | `<space> t D` | `⚙️` | Toggle default | Switches default creation mode (`bullet` <-> `task`) |
 
----
-
 ### 3. Focus Menu (`<space> f ...`)
 
 | Shortcut | Action | Category | Description |
 |---|---|---|---|
+| `Esc` / `q` | Exit Focus Mode | Focus | Instantly exits focus mode and clears top Focus Banner |
 | `<space> f o` | Toggle / Exit Focus Mode | Focus | Toggles current focus task status and displays top Focus Banner |
 | `<space> f f` | Toggle / Exit Focus Mode | Focus | Toggles current focus task status and displays top Focus Banner |
 | `<space> f c` | Clear Focus | Focus | Clears current focus task and removes top Focus Banner |

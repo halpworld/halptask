@@ -72,7 +72,7 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
   - Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`). Unindenting/moving subtasks automatically cleans up inherited tags.
   - Plain text Markdown storage as `#tagname`.
 - **Focus Mode & Top Focus Banner 🎯**:
-  - Quickly mark any task or task group as your active focus item (`fo` / `tf` / `<space> t f`).
+  - Quickly mark any task or task group as your active focus item (`fo` / `tf` / `<space> t f`), and exit focus mode instantly with `Esc` or `q`.
   - Highlights focused tasks with vivid `🎯 FOCUS` badges, bold cyan text, and subtle subtask group focus indicators.
   - Renders a top Focus Banner pane with task context path and attached note previews for instant visibility.
 - **Task Archiving 📦**:

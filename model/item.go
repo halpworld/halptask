@@ -204,7 +204,7 @@ func ItemFromProto(pb *storagepb.ItemProto) *Item {
 	tags := append([]string{}, pb.Tags...)
 	item := &Item{
 		ID:        pb.Id,
-		Text:      pb.Text,
+		Text:      SanitizeTerminalEscapeArtifacts(pb.Text),
 		IsTask:    pb.IsTask,
 		Status:    TaskStatusFromProto(pb.Status),
 		Folded:    pb.Folded,
@@ -215,7 +215,7 @@ func ItemFromProto(pb *storagepb.ItemProto) *Item {
 		NodeID:    pb.NodeId,
 		Deleted:   pb.Deleted,
 		Version:   pb.Version,
-		Note:      pb.Note,
+		Note:      SanitizeTerminalEscapeArtifacts(pb.Note),
 		IsFocused: pb.IsFocused,
 	}
 	for _, childProto := range pb.Children {

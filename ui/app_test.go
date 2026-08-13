@@ -957,3 +957,62 @@ func TestEncryptionToggleConfigSync(t *testing.T) {
 	}
 }
 
+func TestExitFocusModeWithEscapeAndQ(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "focus_exit_test.md")
+
+	tree := model.NewTree()
+	item := tree.InsertBelow("", "Focus Task")
+	storage := model.NewStorage(filePath, false)
+	_ = storage.Save(tree, "")
+
+	app := AppModel{
+		Config:      config.DefaultConfig(),
+		Storage:     storage,
+		Tree:        tree,
+		Mode:        ModeNormal,
+		CursorIndex: 0,
+		SelectedID:  item.ID,
+		TreeView:    NewTreeView(),
+		WhichKey:    NewWhichKeyModel(),
+	}
+
+	// 1. Focus the item
+	app.Tree.ToggleFocus(item.ID)
+	if app.Tree.GetFocusedItem() == nil {
+		t.Fatalf("expected item to be focused")
+	}
+
+	// 2. Press Esc to exit focus mode
+	m, _ := app.updateNormal(tea.KeyMsg{Type: tea.KeyEsc})
+	app = m.(AppModel)
+
+	if app.Tree.GetFocusedItem() != nil {
+		t.Fatalf("expected focus to be cleared after pressing Esc")
+	}
+	if app.StatusMsg != "Cleared current focus task" {
+		t.Fatalf("expected StatusMsg 'Cleared current focus task', got %q", app.StatusMsg)
+	}
+
+	// 3. Focus the item again
+	app.Tree.ToggleFocus(item.ID)
+	if app.Tree.GetFocusedItem() == nil {
+		t.Fatalf("expected item to be focused")
+	}
+
+	// 4. Press q to exit focus mode (should NOT quit app)
+	m, cmd := app.updateNormal(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
+	if cmd != nil {
+		t.Fatalf("expected cmd to be nil on exiting focus mode via 'q', got %v", cmd)
+	}
+	app = m.(AppModel)
+
+	if app.Tree.GetFocusedItem() != nil {
+		t.Fatalf("expected focus to be cleared after pressing 'q'")
+	}
+	if app.StatusMsg != "Cleared current focus task" {
+		t.Fatalf("expected StatusMsg 'Cleared current focus task', got %q", app.StatusMsg)
+	}
+}
+
+

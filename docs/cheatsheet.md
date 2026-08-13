@@ -39,7 +39,7 @@ Pressing `<space>` or pressing the first key of any multi-character command (suc
 | `<space> t s` | `[ ]` | Mark as **Todo** (Gray empty checkbox) |
 | `<space> t p` | `[~]` | Mark as **In Progress** (Orange `~` indicator) |
 | `<space> t d` | `[x]` | Mark as **Done** (Green `X`, faint strikethrough text) |
-| `<space> f o` / `<space> t f` | `🎯` | Toggle / Exit **Current Focus Task** & display top Focus Banner |
+| `Esc` / `q` / `fo` / `tf` | `🎯` | Exit / Toggle **Current Focus Task** & display top Focus Banner |
 | `<space> t a` | `🏷️` | Open **Tag / Label Manager** overlay |
 | `<space> n` / `<space> t n` | `📝` | Open / Edit **Task Markdown Note** modal |
 | `<space> t D` | `⚙️` | Toggle default item creation type (`bullet` <-> `task`) |

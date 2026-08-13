@@ -90,6 +90,7 @@ func (nm *NoteModal) SetItem(item *model.Item, tree *model.Tree) {
 
 	nm.TextArea.Reset()
 	if item != nil {
+		item.Note = model.SanitizeTerminalEscapeArtifacts(item.Note)
 		nm.TextArea.SetValue(item.Note)
 	}
 	nm.refreshLinksAndRender()
@@ -469,10 +470,13 @@ func (nm *NoteModal) Update(msg tea.Msg) (*NoteModal, tea.Cmd, string) {
 
 	case NoteModeEdit:
 		if keyMsg, ok := msg.(tea.KeyMsg); ok {
+			if IsTerminalEscapeResponseMsg(keyMsg) {
+				return nm, nil, ""
+			}
 			switch keyMsg.String() {
 			case "esc", "ctrl+s":
 				if nm.Item != nil {
-					nm.Item.Note = nm.TextArea.Value()
+					nm.Item.Note = model.SanitizeTerminalEscapeArtifacts(nm.TextArea.Value())
 				}
 				nm.Mode = NoteModeView
 				nm.TextArea.Blur()
@@ -492,6 +496,10 @@ func (nm *NoteModal) Update(msg tea.Msg) (*NoteModal, tea.Cmd, string) {
 			}
 		}
 		nm.TextArea, cmd = nm.TextArea.Update(msg)
+		cleaned := model.SanitizeTerminalEscapeArtifacts(nm.TextArea.Value())
+		if cleaned != nm.TextArea.Value() {
+			nm.TextArea.SetValue(cleaned)
+		}
 		return nm, cmd, ""
 	}
 

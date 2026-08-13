@@ -480,6 +480,9 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newModel = m
 
 	case tea.KeyMsg:
+		if IsTerminalEscapeResponseMsg(msg) {
+			return m, nil
+		}
 		if msg.String() == "ctrl+c" {
 			_ = m.saveFile()
 			return m, tea.Quit
@@ -1100,7 +1103,31 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "?":
 		m.Mode = ModeHelp
 		m.KeyBuffer = ""
+	case "esc":
+		if m.Tree.GetFocusedItem() != nil {
+			m.pushUndo()
+			m.Tree.ClearFocus()
+			m.ensureValidCursor()
+			m.PendingAutoSave = true
+			_ = m.saveFile()
+			m.StatusMsg = "Cleared current focus task"
+		} else if m.ZoomedID != "" {
+			m.ZoomedID = ""
+			m.StatusMsg = "Unzoomed (full view)"
+			m.ensureValidCursor()
+		}
+		m.KeyBuffer = ""
 	case "q":
+		if m.Tree.GetFocusedItem() != nil {
+			m.pushUndo()
+			m.Tree.ClearFocus()
+			m.ensureValidCursor()
+			m.PendingAutoSave = true
+			_ = m.saveFile()
+			m.StatusMsg = "Cleared current focus task"
+			m.KeyBuffer = ""
+			return m, nil
+		}
 		_ = m.saveFile()
 		return m, tea.Quit
 	default:
@@ -1513,7 +1540,7 @@ func (m AppModel) updateInsert(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg.String() {
 	case "enter":
-		text := strings.TrimSpace(m.TextInput.Value())
+		text := model.SanitizeTerminalEscapeArtifacts(strings.TrimSpace(m.TextInput.Value()))
 		if m.SelectedID != "" {
 			item := m.Tree.FindItem(m.SelectedID)
 			if item != nil && item.Text != text {
@@ -1545,6 +1572,10 @@ func (m AppModel) updateInsert(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	m.TextInput, cmd = m.TextInput.Update(msg)
+	cleaned := model.SanitizeTerminalEscapeArtifacts(m.TextInput.Value())
+	if cleaned != m.TextInput.Value() {
+		m.TextInput.SetValue(cleaned)
+	}
 	return m, cmd
 }
 
@@ -1902,7 +1933,7 @@ func (m AppModel) renderFocusBanner() string {
 		details = append(details, noteStr)
 	}
 
-	hintStr := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Faint(true).Render("[Press 'fo', 'tf', or '<space> t f' to EXIT focus mode  •  'N' to edit note]")
+	hintStr := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Faint(true).Render("[Press 'Esc', 'q', 'fo', or 'tf' to EXIT focus mode  •  'N' to edit note]")
 
 	var body string
 	if len(details) > 0 {
