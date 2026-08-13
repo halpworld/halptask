@@ -30,6 +30,7 @@ type Item struct {
 	Deleted   bool       `json:"deleted,omitempty"`
 	Version   uint64     `json:"version,omitempty"`
 	Note      string     `json:"note,omitempty"`
+	IsFocused bool       `json:"is_focused,omitempty"`
 	Parent    *Item      `json:"-"`
 }
 
@@ -129,6 +130,7 @@ func (i *Item) Clone() *Item {
 		Deleted:   i.Deleted,
 		Version:   i.Version,
 		Note:      i.Note,
+		IsFocused: i.IsFocused,
 	}
 	for _, child := range i.Children {
 		childClone := child.Clone()
@@ -185,6 +187,7 @@ func (i *Item) ToProto() *storagepb.ItemProto {
 		Deleted:   i.Deleted,
 		Version:   i.Version,
 		Note:      i.Note,
+		IsFocused: i.IsFocused,
 	}
 	for _, child := range i.Children {
 		if childProto := child.ToProto(); childProto != nil {
@@ -213,6 +216,7 @@ func ItemFromProto(pb *storagepb.ItemProto) *Item {
 		Deleted:   pb.Deleted,
 		Version:   pb.Version,
 		Note:      pb.Note,
+		IsFocused: pb.IsFocused,
 	}
 	for _, childProto := range pb.Children {
 		if child := ItemFromProto(childProto); child != nil {

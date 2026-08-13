@@ -93,7 +93,7 @@ func (wk *WhichKeyModel) GetOptions(allBindings []KeyBinding) (string, []WhichKe
 			} else if nextKey == "a" {
 				groupName = "+archive"
 			} else if nextKey == "f" {
-				groupName = "+view/filter"
+				groupName = "+focus"
 			} else {
 				groupName = "+" + strings.ToLower(b.Category)
 			}

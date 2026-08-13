@@ -42,6 +42,7 @@
 - **Leader Key & WhichKey System (`<space>`)**: Non-intrusive popup menu guide that updates in real time as you type key sequences.
 - **Hierarchical Outliner & Folding**: Collapse subtrees (`zc`), expand (`zo`), toggle (`za`), or fold everything (`zM`/`zR`) with dynamic child counters.
 - **Task Management**: Convert bullets into rich tasks with status cycling: `[ ]` Todo ➔ `[~]` In Progress ➔ `[x]` Done.
+- **Focus Mode & Top Focus Banner 🎯**: Mark any task/task group as your current focus (`fo` / `tf` / `<space> t f`). Renders vivid `🎯 FOCUS` badges, group focus indicators, and a persistent top Focus Banner with task context & attached note previews.
 - **Tag & Label System 🏷️**: Assign direct tags (`T` / `<space> t a`) with custom emojis & colors. Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`).
 - **Compressed & Encrypted Task Archiving 📦**: Archive completed tasks (`<space> a c`) or selected subtrees (`<space> a a`) into schema-safe gzip-compressed storage (`archive.dat`) with interactive Archive Browser modal (`<space> a v`).
 - **Live Dashboard Panel (`<space> d`)**: Real-time task statistics, completion progress bar (`[████░░░░] 50%`), and active in-progress task focus view.

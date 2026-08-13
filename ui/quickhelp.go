@@ -30,6 +30,7 @@ func GetCommonShortcuts() []QuickHelpItem {
 		{Key: "enter", Label: "fold"},
 		{Key: "i", Label: "edit"},
 		{Key: "t", Label: "task"},
+		{Key: "fo", Label: "focus"},
 		{Key: "T", Label: "tags"},
 		{Key: "?", Label: "help"},
 	}

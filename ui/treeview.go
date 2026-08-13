@@ -105,6 +105,19 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 	bulletStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#7dcfff"))
 
+	focusBadgeStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#1a1b26")).
+		Background(lipgloss.Color("#7dcfff")).
+		Padding(0, 1)
+
+	focusedTextStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#7dcfff"))
+
+	groupFocusedTextStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#7dcfff"))
+
 	var lines []string
 
 	// Determine render window bounds based on Height
@@ -118,6 +131,18 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 		v := visible[i]
 		item := v.Item
 		isSelected := (i == cursorIndex)
+
+		// Check focus status
+		isFocused := item.IsFocused
+		isAncestorFocused := false
+		curr := item.Parent
+		for curr != nil {
+			if curr.IsFocused {
+				isAncestorFocused = true
+				break
+			}
+			curr = curr.Parent
+		}
 
 		// Indentation prefix
 		indentStr := ""
@@ -177,6 +202,10 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 		var formattedText string
 		if item.IsTask && item.Status == model.StatusDone {
 			formattedText = doneTextStyle.Render(item.Text)
+		} else if isFocused {
+			formattedText = focusedTextStyle.Render(item.Text)
+		} else if isAncestorFocused {
+			formattedText = groupFocusedTextStyle.Render(item.Text)
 		} else {
 			formattedText = normalTextStyle.Render(item.Text)
 		}
@@ -190,6 +219,14 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 		if item.Note != "" {
 			noteStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#bb9af7"))
 			formattedText += " " + noteStyle.Render("📝")
+		}
+
+		// Focus badge if focused or part of focused group
+		if isFocused {
+			formattedText += " " + focusBadgeStyle.Render("🎯 FOCUS")
+		} else if isAncestorFocused {
+			ancestorBadge := lipgloss.NewStyle().Foreground(lipgloss.Color("#7dcfff")).Faint(true).Render("[🎯 focus group]")
+			formattedText += " " + ancestorBadge
 		}
 
 		// Tag rendering (Direct & Inherited)

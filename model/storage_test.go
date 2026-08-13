@@ -157,6 +157,53 @@ func TestEnsureIDsForUnassignedItems(t *testing.T) {
 	}
 }
 
+func TestFocusModePersistence(t *testing.T) {
+	tree := NewTree()
+	r1 := tree.InsertBelow("", "Root 1")
+	c1 := tree.AddChild(r1.ID, "Child 1.1")
+
+	// Set focus on c1
+	focused := tree.ToggleFocus(c1.ID)
+	if focused == nil || !focused.IsFocused {
+		t.Fatalf("expected child to be focused")
+	}
+
+	if tree.GetFocusedItem() != c1 {
+		t.Fatalf("expected GetFocusedItem() to return c1")
+	}
+
+	// Test Protobuf serialization and deserialization
+	pbData, err := SerializeProtobuf(tree)
+	if err != nil {
+		t.Fatalf("failed to serialize protobuf: %v", err)
+	}
+
+	parsedPbTree, err := ParseProtobuf(pbData)
+	if err != nil {
+		t.Fatalf("failed to parse protobuf: %v", err)
+	}
+
+	focusedFromPb := parsedPbTree.GetFocusedItem()
+	if focusedFromPb == nil || focusedFromPb.ID != c1.ID {
+		t.Fatalf("expected focused item ID %s from Protobuf, got %v", c1.ID, focusedFromPb)
+	}
+
+	// Test Markdown serialization and deserialization
+	md := SerializeMarkdown(tree)
+	parsedMdTree := ParseMarkdown(md)
+
+	focusedFromMd := parsedMdTree.GetFocusedItem()
+	if focusedFromMd == nil || !focusedFromMd.IsFocused {
+		t.Fatalf("expected focused item from Markdown parsing")
+	}
+
+	// Test toggling focus off
+	tree.ToggleFocus(c1.ID)
+	if tree.GetFocusedItem() != nil {
+		t.Fatalf("expected GetFocusedItem() to be nil after clearing focus")
+	}
+}
+
 func containsSub(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && searchString(s, substr))
 }

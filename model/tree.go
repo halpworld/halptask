@@ -573,6 +573,51 @@ func (t *Tree) SetStatus(id string, status TaskStatus) {
 	item.Status = status
 }
 
+func (t *Tree) GetFocusedItem() *Item {
+	var found *Item
+	var recurse func(items []*Item)
+	recurse = func(items []*Item) {
+		for _, item := range items {
+			if item.IsFocused {
+				found = item
+				return
+			}
+			if len(item.Children) > 0 {
+				recurse(item.Children)
+				if found != nil {
+					return
+				}
+			}
+		}
+	}
+	recurse(t.Roots)
+	return found
+}
+
+func (t *Tree) ClearFocus() {
+	var recurse func(items []*Item)
+	recurse = func(items []*Item) {
+		for _, item := range items {
+			item.IsFocused = false
+			if len(item.Children) > 0 {
+				recurse(item.Children)
+			}
+		}
+	}
+	recurse(t.Roots)
+}
+
+func (t *Tree) ToggleFocus(id string) *Item {
+	target := t.FindItem(id)
+	if target == nil {
+		return nil
+	}
+	wasFocused := target.IsFocused
+	t.ClearFocus()
+	target.IsFocused = !wasFocused
+	return target
+}
+
 func (t *Tree) ToggleFold(id string) {
 	item := t.FindItem(id)
 	if item != nil && len(item.Children) > 0 {

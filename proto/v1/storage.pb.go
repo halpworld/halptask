@@ -31,6 +31,7 @@ type ItemProto struct {
 	Deleted   bool
 	Version   uint64
 	Note      string
+	IsFocused bool
 }
 
 type TreeProto struct {
@@ -131,6 +132,10 @@ func MarshalItemProto(item *ItemProto) ([]byte, error) {
 	// Field 13: note (string)
 	if item.Note != "" {
 		buf = appendStringField(buf, 13, item.Note)
+	}
+	// Field 14: is_focused (bool)
+	if item.IsFocused {
+		buf = appendVarintField(buf, 14, 1)
 	}
 
 	return buf, nil
@@ -292,6 +297,13 @@ func UnmarshalItemProto(data []byte) (*ItemProto, error) {
 			}
 			offset += n
 			item.Note = string(strBytes)
+		case 14: // is_focused
+			val, n, err := readVarint(data[offset:])
+			if err != nil {
+				return nil, err
+			}
+			offset += n
+			item.IsFocused = (val != 0)
 		default:
 			n, err := skipField(data[offset:], wireType)
 			if err != nil {

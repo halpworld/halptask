@@ -11,6 +11,7 @@ Welcome agent! This document provides an architectural overview, codebase walkth
 ### Core Features
 - **Hierarchical Outliner**: Indent/unindent bullet points, nested subtrees, folding (`zc`, `zo`, `za`, `zM`, `zR`).
 - **Task Management**: Convert bullet points to tasks (`[ ]` Todo, `[~]` In-Progress, `[x]` Done).
+- **Focus Mode & Top Focus Banner 🎯**: Mark tasks/groups as active focus (`fo` / `tf` / `<space> t f`) with top Focus Banner, group indicators, and note previews.
 - **Keyboard-Driven**: Direct Vim motions (`j`, `k`, `h`, `l`, `gg`, `G`, `o`, `O`, `dd`, `x`, `u`, `ctrl+r`, `tab`, `shift+tab`) plus a Leader Key (`<space>`) WhichKey popup menu system.
 - **Storage & Security**: Plain text Markdown storage format (`~/.config/halptask/data.txt`) with optional **AES-256-GCM + PBKDF2** encryption.
 

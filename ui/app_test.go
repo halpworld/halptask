@@ -766,3 +766,66 @@ func TestAppNoteModalIntegration(t *testing.T) {
 		t.Fatalf("expected status msg confirming jump, got %q", app.StatusMsg)
 	}
 }
+
+func TestFocusModeIntegration(t *testing.T) {
+	cfg := config.DefaultConfig()
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "Task One")
+	r2 := tree.InsertBelow(r1.ID, "Task Two")
+
+	app := AppModel{
+		Config:    cfg,
+		Tree:      tree,
+		Mode:      ModeNormal,
+		WhichKey:  NewWhichKeyModel(),
+		QuickHelp: NewQuickHelp(),
+		TreeView:  NewTreeView(),
+		StatusBar: NewStatusBar(),
+		HelpModal: NewHelpModal(),
+		Width:     80,
+		Height:    24,
+	}
+	app.ensureValidCursor()
+	app.SelectedID = r1.ID
+
+	// 1. Toggle focus on r1 via Leader '<space> t f'
+	app.tryExecuteKeyBinding([]string{" ", "t", "f"})
+	if !r1.IsFocused {
+		t.Fatalf("expected r1 to be focused after '<space> t f'")
+	}
+	if !strings.Contains(app.StatusMsg, "Set current focus") {
+		t.Fatalf("expected status msg confirming focus, got %q", app.StatusMsg)
+	}
+
+	// 2. Toggle focus on r2 via direct shortcut 'fo'
+	app.SelectedID = r2.ID
+	m, _ := app.updateNormal(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'f'}})
+	app = m.(AppModel)
+	m, _ = app.updateNormal(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'o'}})
+	app = m.(AppModel)
+
+	if r1.IsFocused {
+		t.Fatalf("expected r1 focus to be cleared when r2 is focused")
+	}
+	if !r2.IsFocused {
+		t.Fatalf("expected r2 to be focused after 'fo'")
+	}
+
+	// 3. Focus banner is rendered in View() with multi-line note scaling
+	r2.Note = "Line 1: Requirement A\nLine 2: Requirement B\nLine 3: Requirement C\nLine 4: Requirement D\nLine 5: Requirement E"
+	app.Height = 30
+	viewStr := app.View()
+	if !strings.Contains(viewStr, "CURRENT FOCUS") || !strings.Contains(viewStr, "Task Two") || !strings.Contains(viewStr, "Line 5: Requirement E") {
+		t.Fatalf("expected View output to contain Focus Banner with all multi-line notes rendered under height 30, got: %s", viewStr)
+	}
+	if !strings.Contains(viewStr, "EXIT focus mode") {
+		t.Fatalf("expected Focus Banner hint to clearly state how to EXIT focus mode, got: %s", viewStr)
+	}
+
+	// 4. Toggle focus off on r2 via Leader '<space> f o'
+	app.tryExecuteKeyBinding([]string{" ", "f", "o"})
+	if r2.IsFocused {
+		t.Fatalf("expected r2 focus to be cleared after '<space> f o'")
+	}
+}
+

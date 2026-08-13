@@ -32,7 +32,14 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "t", "a"}, KeyString: "a", Label: "manage tags / labels", Category: "Tasks"},
 		{Keys: []string{" ", "t", "n"}, KeyString: "n", Label: "open/edit task note", Category: "Tasks"},
 		{Keys: []string{" ", "n"}, KeyString: "n", Label: "open/edit task note", Category: "Tasks"},
+		{Keys: []string{" ", "t", "f"}, KeyString: "f", Label: "toggle/exit focus mode", Category: "Tasks"},
+		{Keys: []string{" ", "t", "h"}, KeyString: "h", Label: "toggle hide completed", Category: "Tasks"},
 		{Keys: []string{" ", "t", "D"}, KeyString: "D", Label: "toggle default type", Category: "Tasks"},
+
+		// Leader Focus Mode operations
+		{Keys: []string{" ", "f", "o"}, KeyString: "o", Label: "toggle/exit focus mode", Category: "Focus"},
+		{Keys: []string{" ", "f", "f"}, KeyString: "f", Label: "toggle/exit focus mode", Category: "Focus"},
+		{Keys: []string{" ", "f", "c"}, KeyString: "c", Label: "clear current focus", Category: "Focus"},
 
 		// Leader Archive operations
 		{Keys: []string{" ", "a", "a"}, KeyString: "a", Label: "archive selected item", Category: "Archive"},
@@ -40,10 +47,11 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "a", "v"}, KeyString: "v", Label: "view / restore archive", Category: "Archive"},
 		{Keys: []string{" ", "a", "r"}, KeyString: "r", Label: "view / restore archive", Category: "Archive"},
 
-		// Leader Fold operations
+		// Leader Fold & Zoom operations
 		{Keys: []string{" ", "z", "c"}, KeyString: "c", Label: "close fold", Category: "Folds"},
 		{Keys: []string{" ", "z", "o"}, KeyString: "o", Label: "open fold", Category: "Folds"},
 		{Keys: []string{" ", "z", "a"}, KeyString: "a", Label: "toggle fold", Category: "Folds"},
+		{Keys: []string{" ", "z", "z"}, KeyString: "z", Label: "zoom / hoist subtree", Category: "Folds"},
 		{Keys: []string{" ", "z", "M"}, KeyString: "M", Label: "close all folds", Category: "Folds"},
 		{Keys: []string{" ", "z", "R"}, KeyString: "R", Label: "open all folds", Category: "Folds"},
 
@@ -98,6 +106,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{"d", "a"}, KeyString: "da", Label: "delete all completed tasks", Category: "Tasks"},
 		{Keys: []string{"f", "f"}, KeyString: "ff", Label: "zoom / hoist subtree", Category: "Nav"},
 		{Keys: []string{"t"}, KeyString: "t", Label: "toggle/cycle task status", Category: "Tasks"},
+		{Keys: []string{"f", "o"}, KeyString: "fo", Label: "toggle current focus task", Category: "Tasks"},
 		{Keys: []string{"T"}, KeyString: "T", Label: "manage tags / labels", Category: "Tasks"},
 		{Keys: []string{"N"}, KeyString: "N", Label: "open/edit task note", Category: "Tasks"},
 		{Keys: []string{"u"}, KeyString: "u", Label: "undo", Category: "Edit"},

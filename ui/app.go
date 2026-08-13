@@ -716,6 +716,20 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				}
 				m.ensureValidCursor()
 				return m, nil
+			case "tf", "fo":
+				if m.SelectedID != "" {
+					m.pushUndo()
+					focusedItem := m.Tree.ToggleFocus(m.SelectedID)
+					m.ensureValidCursor()
+					m.PendingAutoSave = true
+					_ = m.saveFile()
+					if focusedItem != nil && focusedItem.IsFocused {
+						m.StatusMsg = fmt.Sprintf("Set current focus: %s", focusedItem.Text)
+					} else {
+						m.StatusMsg = "Cleared current focus task"
+					}
+				}
+				return m, nil
 			case "oo":
 				m.pushUndo()
 				newItem := m.Tree.InsertBelow(m.SelectedID, "")
@@ -1195,6 +1209,52 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 				return true, nil
 			}
 		}
+	case "  f o", "  f f", "  t f", "t f", "tf", "f o", "fo": // Toggle current focus task
+		if m.SelectedID != "" {
+			m.pushUndo()
+			focusedItem := m.Tree.ToggleFocus(m.SelectedID)
+			m.ensureValidCursor()
+			m.PendingAutoSave = true
+			_ = m.saveFile()
+			if focusedItem != nil && focusedItem.IsFocused {
+				m.StatusMsg = fmt.Sprintf("Set current focus: %s", focusedItem.Text)
+			} else {
+				m.StatusMsg = "Cleared current focus task"
+			}
+			return true, nil
+		}
+	case "  f c": // Clear focus mode
+		if m.Tree.GetFocusedItem() != nil {
+			m.pushUndo()
+			m.Tree.ClearFocus()
+			m.ensureValidCursor()
+			m.PendingAutoSave = true
+			_ = m.saveFile()
+			m.StatusMsg = "Cleared current focus task"
+			return true, nil
+		}
+	case "  z z", "  z h", "f f", "ff": // Zoom / Hoist focused subtree
+		if m.ZoomedID == "" && m.SelectedID != "" {
+			m.ZoomedID = m.SelectedID
+			item := m.Tree.FindItem(m.ZoomedID)
+			if item != nil {
+				m.StatusMsg = fmt.Sprintf("Zoomed in: %s", item.Text)
+			}
+		} else {
+			m.ZoomedID = ""
+			m.StatusMsg = "Unzoomed (full view)"
+		}
+		m.ensureValidCursor()
+		return true, nil
+	case "  t h", "f c", "fc": // Toggle hide completed tasks
+		m.HideCompleted = !m.HideCompleted
+		if m.HideCompleted {
+			m.StatusMsg = "Hiding completed tasks [x]"
+		} else {
+			m.StatusMsg = "Showing all tasks"
+		}
+		m.ensureValidCursor()
+		return true, nil
 	case "  n", "  t n": // Open / edit task note
 		if m.SelectedID != "" {
 			item := m.Tree.FindItem(m.SelectedID)
@@ -1699,6 +1759,105 @@ func (m AppModel) renderTitleBar() string {
 	return headerStyle.Render(titleText)
 }
 
+func (m AppModel) renderFocusBanner() string {
+	focusedItem := m.Tree.GetFocusedItem()
+	if focusedItem == nil {
+		return ""
+	}
+
+	bannerWidth := m.Width
+	if bannerWidth <= 0 {
+		bannerWidth = 80
+	}
+
+	boxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#7dcfff")).
+		Padding(0, 1).
+		Width(bannerWidth - 2)
+
+	titleBadge := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#1a1b26")).
+		Background(lipgloss.Color("#7dcfff")).
+		Padding(0, 1).
+		Render("🎯 CURRENT FOCUS")
+
+	idStr := ""
+	if m.Config == nil || m.Config.ShowItemIDs {
+		idStr = fmt.Sprintf(" #%s", focusedItem.ID)
+	}
+
+	statusBox := ""
+	if focusedItem.IsTask {
+		switch focusedItem.Status {
+		case model.StatusDone:
+			statusBox = lipgloss.NewStyle().Foreground(lipgloss.Color("#9ece6a")).Bold(true).Render(" [x]")
+		case model.StatusInProgress:
+			statusBox = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff9e64")).Bold(true).Render(" [~]")
+		case model.StatusTodo:
+			statusBox = lipgloss.NewStyle().Foreground(lipgloss.Color("#787c99")).Bold(true).Render(" [ ]")
+		}
+	}
+
+	itemText := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#c0caf5")).Render(focusedItem.Text)
+	titleLine := fmt.Sprintf("%s%s%s %s", titleBadge, idStr, statusBox, itemText)
+
+	var details []string
+	parentPath := m.Tree.GetParentPath(focusedItem)
+	if parentPath != "" {
+		pathStr := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Italic(true).Render("📍 Context: " + parentPath)
+		details = append(details, pathStr)
+	}
+
+	if focusedItem.Note != "" {
+		noteLines := strings.Split(strings.TrimRight(focusedItem.Note, "\r\n"), "\n")
+
+		// Calculate available note lines based on screen height
+		// Allocate up to 45% of total screen height for the note display
+		maxNoteLines := (m.Height * 45) / 100
+		if maxNoteLines < 4 {
+			maxNoteLines = 4
+		} else if maxNoteLines > 16 {
+			maxNoteLines = 16
+		}
+
+		previewLines := noteLines
+		hasMore := false
+		if len(previewLines) > maxNoteLines {
+			previewLines = previewLines[:maxNoteLines]
+			hasMore = true
+		}
+
+		noteHeader := lipgloss.NewStyle().Foreground(lipgloss.Color("#bb9af7")).Bold(true).Render("📝 Note:")
+		var noteBodyLines []string
+		for _, line := range previewLines {
+			noteBodyLines = append(noteBodyLines, "   "+lipgloss.NewStyle().Foreground(lipgloss.Color("#a9b1d6")).Render(line))
+		}
+		if hasMore {
+			remainingCount := len(noteLines) - maxNoteLines
+			moreMsg := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Italic(true).Render(
+				fmt.Sprintf("   ... (+%d more lines; press 'N' or '<space> n' to view full note)", remainingCount),
+			)
+			noteBodyLines = append(noteBodyLines, moreMsg)
+		}
+
+		noteStr := noteHeader + "\n" + strings.Join(noteBodyLines, "\n")
+		details = append(details, noteStr)
+	}
+
+	hintStr := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Faint(true).Render("[Press 'fo', 'tf', or '<space> t f' to EXIT focus mode  •  'N' to edit note]")
+
+	var body string
+	if len(details) > 0 {
+		body = titleLine + "\n" + strings.Join(details, "\n") + "\n" + hintStr
+	} else {
+		body = titleLine + "  " + hintStr
+	}
+
+	return boxStyle.Render(body)
+}
+
 func (m AppModel) View() string {
 	if m.Width == 0 || m.Height == 0 {
 		return "Loading HalpTask..."
@@ -1785,6 +1944,7 @@ func (m AppModel) View() string {
 
 	// Normal View Layout: Header / Tree View (+ Dashboard) / Text Input / WhichKey / Status Bar
 	header := m.renderTitleBar()
+	focusBannerStr := m.renderFocusBanner()
 
 	m.TreeView.Tree = m.Tree
 	if m.Config != nil {
@@ -1795,6 +1955,9 @@ func (m AppModel) View() string {
 
 	// Calculate content height reserved for TreeView & Dashboard
 	reservedHeight := 3 // Header(1) + QuickHelp(1) + StatusBar(1)
+	if focusBannerStr != "" {
+		reservedHeight += strings.Count(focusBannerStr, "\n") + 1
+	}
 	if m.Mode == ModeInsert || m.Mode == ModeSearch {
 		reservedHeight += 3
 	}
@@ -1903,6 +2066,9 @@ func (m AppModel) View() string {
 
 	var viewParts []string
 	viewParts = append(viewParts, header)
+	if focusBannerStr != "" {
+		viewParts = append(viewParts, focusBannerStr)
+	}
 	viewParts = append(viewParts, mainArea)
 
 	if midSection != "" {

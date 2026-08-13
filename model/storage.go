@@ -264,6 +264,15 @@ func ParseMarkdown(content string) *Tree {
 			lineText = strings.TrimSpace(lineText)
 		}
 
+		// Check focus tag
+		isFocused := false
+		if strings.Contains(lineText, "<!-- focus -->") || strings.Contains(lineText, "<!-- focused -->") {
+			isFocused = true
+			lineText = strings.ReplaceAll(lineText, "<!-- focus -->", "")
+			lineText = strings.ReplaceAll(lineText, "<!-- focused -->", "")
+			lineText = strings.TrimSpace(lineText)
+		}
+
 		// Strip leading bullet markers ('-', '*', '•')
 		var item *Item
 		id := explicitID
@@ -294,6 +303,7 @@ func ParseMarkdown(content string) *Tree {
 		item.Text = cleanText
 		item.Tags = tags
 		item.Folded = folded
+		item.IsFocused = isFocused
 
 		if depth == 0 {
 			tree.Roots = append(tree.Roots, item)
@@ -374,6 +384,9 @@ func SerializeMarkdown(tree *Tree) string {
 
 			if item.Folded {
 				builder.WriteString(" <!-- fold -->")
+			}
+			if item.IsFocused {
+				builder.WriteString(" <!-- focus -->")
 			}
 			if item.ID != "" {
 				builder.WriteString(fmt.Sprintf(" <!-- id: %s -->", item.ID))

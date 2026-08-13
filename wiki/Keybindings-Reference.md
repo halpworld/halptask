@@ -39,19 +39,34 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> t s` | `[ ]` | Mark Todo | Sets status to **Todo** (Gray empty box) |
 | `<space> t p` | `[~]` | Mark In Progress | Sets status to **In Progress** (Orange `~`) |
 | `<space> t d` | `[x]` | Mark Done | Sets status to **Done** (Green `X`, strikethrough) |
+| `<space> t f` | `🎯` | Current Focus | Toggles current focus task status and displays Focus Banner |
 | `<space> t a` | `🏷️` | Manage tags | Opens interactive Tag / Label Manager modal |
 | `<space> n` / `<space> t n` | `📝` | Task Notes | Opens interactive Task Markdown Note modal |
+| `<space> t h` | `👁️` | Filter completed | Toggles hiding/showing completed `[x]` tasks |
 | `<space> t D` | `⚙️` | Toggle default | Switches default creation mode (`bullet` <-> `task`) |
 
 ---
 
-### 3. Folds Menu (`<space> z ...`)
+### 3. Focus Menu (`<space> f ...`)
+
+| Shortcut | Action | Category | Description |
+|---|---|---|---|
+| `<space> f o` | Toggle / Exit Focus Mode | Focus | Toggles current focus task status and displays top Focus Banner |
+| `<space> f f` | Toggle / Exit Focus Mode | Focus | Toggles current focus task status and displays top Focus Banner |
+| `<space> f c` | Clear Focus | Focus | Clears current focus task and removes top Focus Banner |
+
+---
+
+### 4. Folds & Zoom Menu (`<space> z ...`)
 
 | Shortcut | Action | Description |
 |---|---|---|
 | `<space> z c` | Close fold | Collapses sub-bullets of selected node |
 | `<space> z o` | Open fold | Expands sub-bullets of selected node |
 | `<space> z a` | Toggle fold | Toggles fold state of selected node |
+| `<space> z z` | Zoom / Hoist | Hoists focused subtree or returns to full view |
+| `<space> z M` | Close all folds | Folds every nested node across entire document |
+| `<space> z R` | Open all folds | Unfolds every node across entire document |
 | `<space> z M` | Close all folds | Folds every nested node across entire document |
 | `<space> z R` | Open all folds | Unfolds every node across entire document |
 
@@ -128,6 +143,7 @@ Single and double-character Vim motions available directly in Normal Mode:
 | `J` | Move down | Swaps position with next sibling |
 | `K` | Move up | Swaps position with previous sibling |
 | `t` | Cycle task | 1-Key task conversion & status cycle (`•` ➔ `[ ]` ➔ `[~]` ➔ `[x]`) |
+| `fo` / `tf` | Toggle Focus | Toggles current focus task status and shows Focus Banner |
 | `T` | Manage tags | Opens Tag & Label Manager modal |
 | `fc` | Filter completed | Toggles hiding/showing completed `[x]` tasks |
 | `da` | Delete completed | Purges all completed `[x]` tasks from document |

@@ -28,6 +28,7 @@ message ItemProto {
   bool deleted = 11;
   uint64 version = 12;
   string note = 13;
+  bool is_focused = 14;
 }
 
 message TreeProto {
