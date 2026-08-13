@@ -6,7 +6,7 @@ set -e
 SOURCE_DIR="$(pwd)"
 WIKI_DIR="${SOURCE_DIR}/wiki"
 TEMP_DIR=$(mktemp -d)
-REMOTE_REPO="git@github.com:arkalon76/halptask.wiki.git"
+REMOTE_REPO="https://github.com/arkalon76/halptask.wiki.git"
 
 echo "🚀 Syncing HalpTask documentation in '${WIKI_DIR}' to GitHub Wiki (${REMOTE_REPO})..."
 
