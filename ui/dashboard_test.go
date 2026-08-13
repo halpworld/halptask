@@ -1,6 +1,7 @@
 package ui_test
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -70,7 +71,9 @@ func TestDashboardToggleLeaderCommand(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ShowDashboard = true
 
-	storage := model.NewStorage(config.ConfigFilePath(), false)
+	dummyPath := filepath.Join(t.TempDir(), "dummy_data.pb")
+	cfg.DataFile = dummyPath
+	storage := model.NewStorage(dummyPath, false)
 	appModel, _ := ui.InitialModel(cfg, storage)
 
 	if !appModel.Config.ShowDashboard {
@@ -98,7 +101,9 @@ func TestDashboardToggleLeaderCommand(t *testing.T) {
 
 func TestCtrlCHardExit(t *testing.T) {
 	cfg := config.DefaultConfig()
-	storage := model.NewStorage(config.ConfigFilePath(), false)
+	dummyPath := filepath.Join(t.TempDir(), "dummy_data.pb")
+	cfg.DataFile = dummyPath
+	storage := model.NewStorage(dummyPath, false)
 	appModel, _ := ui.InitialModel(cfg, storage)
 
 	// Send ctrl+c

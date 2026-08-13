@@ -57,7 +57,7 @@ func IsEncryptedFile(filePath string) (bool, error) {
 
 func GetMigratedFilePath(oldPath string) string {
 	ext := strings.ToLower(filepath.Ext(oldPath))
-	if ext == ".pb" || ext == ".halp" {
+	if ext == ".pb" || ext == ".halp" || ext == ".yaml" || ext == ".yml" || ext == ".json" {
 		return oldPath
 	}
 	if ext == ".txt" || ext == ".md" {
@@ -66,7 +66,19 @@ func GetMigratedFilePath(oldPath string) string {
 	return oldPath + ".pb"
 }
 
+func isNonDataConfigFile(filePath string) bool {
+	lower := strings.ToLower(filePath)
+	return strings.HasSuffix(lower, ".yaml") ||
+		strings.HasSuffix(lower, ".yml") ||
+		strings.HasSuffix(lower, ".json") ||
+		strings.Contains(lower, "config.yaml")
+}
+
 func (s *Storage) MigrateIfNeeded(passphrase string) (bool, string, error) {
+	if isNonDataConfigFile(s.FilePath) {
+		return false, s.FilePath, nil
+	}
+
 	if _, err := os.Stat(s.FilePath); os.IsNotExist(err) {
 		return false, s.FilePath, nil
 	}

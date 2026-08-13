@@ -257,3 +257,27 @@ func BenchmarkStorageSize(b *testing.B) {
 		len(compProto),
 		(1.0-float64(len(compProto))/float64(len(markdownData)))*100.0)
 }
+
+func TestYamlConfigFileIgnoredInMigration(t *testing.T) {
+	tempDir := t.TempDir()
+	yamlPath := filepath.Join(tempDir, "config.yaml")
+	yamlContent := "auto_save: true\ndata_file: /tmp/data.pb\n"
+
+	if err := os.WriteFile(yamlPath, []byte(yamlContent), 0644); err != nil {
+		t.Fatalf("failed to write yaml file: %v", err)
+	}
+
+	storage := model.NewStorage(yamlPath, false)
+	migrated, newPath, err := storage.MigrateIfNeeded("")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if migrated {
+		t.Fatalf("expected migrated == false for .yaml file")
+	}
+
+	if newPath != yamlPath {
+		t.Fatalf("expected newPath to remain %q, got %q", yamlPath, newPath)
+	}
+}
