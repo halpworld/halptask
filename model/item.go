@@ -29,6 +29,7 @@ type Item struct {
 	NodeID    string     `json:"node_id,omitempty"`
 	Deleted   bool       `json:"deleted,omitempty"`
 	Version   uint64     `json:"version,omitempty"`
+	Note      string     `json:"note,omitempty"`
 	Parent    *Item      `json:"-"`
 }
 
@@ -127,6 +128,7 @@ func (i *Item) Clone() *Item {
 		NodeID:    i.NodeID,
 		Deleted:   i.Deleted,
 		Version:   i.Version,
+		Note:      i.Note,
 	}
 	for _, child := range i.Children {
 		childClone := child.Clone()
@@ -182,6 +184,7 @@ func (i *Item) ToProto() *storagepb.ItemProto {
 		NodeId:    i.NodeID,
 		Deleted:   i.Deleted,
 		Version:   i.Version,
+		Note:      i.Note,
 	}
 	for _, child := range i.Children {
 		if childProto := child.ToProto(); childProto != nil {
@@ -209,6 +212,7 @@ func ItemFromProto(pb *storagepb.ItemProto) *Item {
 		NodeID:    pb.NodeId,
 		Deleted:   pb.Deleted,
 		Version:   pb.Version,
+		Note:      pb.Note,
 	}
 	for _, childProto := range pb.Children {
 		if child := ItemFromProto(childProto); child != nil {

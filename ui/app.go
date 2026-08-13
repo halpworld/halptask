@@ -92,6 +92,7 @@ type AppModel struct {
 	HelpModal   HelpModal
 	TagModal    *TagModal
 	ConfigModal *ConfigModal
+	NoteModal   *NoteModal
 
 	Passphrase string
 	StatusMsg  string
@@ -171,9 +172,10 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		HelpModal:       NewHelpModal(),
 		TagModal:        NewTagModal(cfg.Tags),
 		ConfigModal:     NewConfigModal(cfg),
+		NoteModal:       NewNoteModal(80, 24),
 		Width:           80,
 		Height:          24,
-		Version:         "0.0.5",
+		Version:         "0.0.6",
 		UpdateAvailable: false,
 		IsUpdating:      false,
 	}
@@ -401,6 +403,9 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ConfigModal.Width = msg.Width
 			m.ConfigModal.Height = msg.Height
 		}
+		if m.NoteModal != nil {
+			m.NoteModal.SetSize(msg.Width, msg.Height)
+		}
 		newModel = m
 
 	case tea.KeyMsg:
@@ -452,6 +457,50 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Mode = ModeNormal
 			}
 			newModel, cmd = m, nil
+		case ModeNote:
+			if m.NoteModal == nil {
+				m.NoteModal = NewNoteModal(m.Width, m.Height)
+			}
+			if msg.String() == "esc" && m.NoteModal.Mode == NoteModeView {
+				m.Mode = ModeNormal
+				_ = m.saveFile()
+				return m, nil
+			}
+			var jumpTargetID string
+			m.NoteModal, cmd, jumpTargetID = m.NoteModal.Update(msg)
+			if m.NoteModal.StatusMsg != "" {
+				m.StatusMsg = m.NoteModal.StatusMsg
+			}
+			if jumpTargetID != "" {
+				m.Mode = ModeNormal
+				item := m.Tree.FindItem(jumpTargetID)
+				if item != nil {
+					curr := item.Parent
+					for curr != nil {
+						curr.Folded = false
+						curr = curr.Parent
+					}
+					visible := m.getVisibleItems()
+					found := false
+					for i, v := range visible {
+						if v.Item.ID == jumpTargetID {
+							m.CursorIndex = i
+							found = true
+							break
+						}
+					}
+					m.ensureValidCursor()
+					if found {
+						m.StatusMsg = fmt.Sprintf("Jumped to item #%s from note", jumpTargetID)
+					} else {
+						m.StatusMsg = fmt.Sprintf("Item #%s is not visible", jumpTargetID)
+					}
+				} else {
+					m.StatusMsg = fmt.Sprintf("Item #%s referenced in note not found", jumpTargetID)
+				}
+				_ = m.saveFile()
+			}
+			newModel, cmd = m, cmd
 		}
 	}
 
@@ -896,6 +945,21 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 		m.KeyBuffer = ""
+	case "N":
+		if m.SelectedID != "" {
+			item := m.Tree.FindItem(m.SelectedID)
+			if item != nil {
+				m.pushUndo()
+				if m.NoteModal == nil {
+					m.NoteModal = NewNoteModal(m.Width, m.Height)
+				}
+				m.NoteModal.SetItem(item, m.Tree)
+				m.Mode = ModeNote
+				m.KeyBuffer = ""
+				return m, nil
+			}
+		}
+		m.KeyBuffer = ""
 	case "u":
 		m.undo()
 		m.KeyBuffer = ""
@@ -1054,6 +1118,19 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 				m.pushUndo()
 				m.Mode = ModeTagPicker
 				m.TagModal.SetItem(item, m.Tree)
+				return true, nil
+			}
+		}
+	case "  n", "  t n": // Open / edit task note
+		if m.SelectedID != "" {
+			item := m.Tree.FindItem(m.SelectedID)
+			if item != nil {
+				m.pushUndo()
+				if m.NoteModal == nil {
+					m.NoteModal = NewNoteModal(m.Width, m.Height)
+				}
+				m.NoteModal.SetItem(item, m.Tree)
+				m.Mode = ModeNote
 				return true, nil
 			}
 		}
@@ -1417,7 +1494,10 @@ func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m *AppModel) autoSave() {
-	if !m.Config.AutoSave {
+	if m.Config == nil || !m.Config.AutoSave {
+		return
+	}
+	if m.Storage == nil {
 		return
 	}
 	if m.Storage.Encrypted && m.Passphrase == "" {
@@ -1431,6 +1511,9 @@ func (m *AppModel) autoSave() {
 }
 
 func (m *AppModel) saveFile() error {
+	if m.Storage == nil {
+		return nil
+	}
 	err := m.Storage.Save(m.Tree, m.Passphrase)
 	if err != nil {
 		m.StatusMsg = "Save error: " + err.Error()
@@ -1559,6 +1642,13 @@ func (m AppModel) View() string {
 			m.ConfigModal = NewConfigModal(m.Config)
 		}
 		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.ConfigModal.Render(m.Width, m.Height))
+	}
+
+	if m.Mode == ModeNote {
+		if m.NoteModal == nil {
+			m.NoteModal = NewNoteModal(m.Width, m.Height)
+		}
+		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.NoteModal.View())
 	}
 
 	// Normal View Layout: Header / Tree View (+ Dashboard) / Text Input / WhichKey / Status Bar

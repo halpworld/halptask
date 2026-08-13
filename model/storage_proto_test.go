@@ -281,3 +281,36 @@ func TestYamlConfigFileIgnoredInMigration(t *testing.T) {
 		t.Fatalf("expected newPath to remain %q, got %q", yamlPath, newPath)
 	}
 }
+
+func TestItemNoteSerializationAndCloning(t *testing.T) {
+	tree := model.NewTree()
+	item := model.NewTask("1", "Task with note", model.StatusTodo)
+	item.Note = "# Note Title\n- Subtask details referencing #2"
+	tree.Roots = append(tree.Roots, item)
+
+	// Test cloning
+	cloned := item.Clone()
+	if cloned.Note != item.Note {
+		t.Fatalf("expected cloned note %q, got %q", item.Note, cloned.Note)
+	}
+
+	// Test Protobuf roundtrip
+	data, err := model.SerializeProtobuf(tree)
+	if err != nil {
+		t.Fatalf("failed to serialize tree: %v", err)
+	}
+
+	parsed, err := model.ParseProtobuf(data)
+	if err != nil {
+		t.Fatalf("failed to parse protobuf: %v", err)
+	}
+
+	if len(parsed.Roots) != 1 {
+		t.Fatalf("expected 1 root item, got %d", len(parsed.Roots))
+	}
+
+	pItem := parsed.Roots[0]
+	if pItem.Note != item.Note {
+		t.Fatalf("expected parsed note %q, got %q", item.Note, pItem.Note)
+	}
+}

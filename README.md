@@ -71,6 +71,11 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
   - Assign direct tags (`T` or `<space> t a`) with emojis and customizable colors.
   - Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`). Unindenting/moving subtasks automatically cleans up inherited tags.
   - Plain text Markdown storage as `#tagname`.
+- **Task Notes & Internal Task Linking 📝**:
+  - Attach rich Markdown notes (`N` or `<space> n` or `<space> t n`) to any task/bullet point.
+  - Built-in rendered view mode with styled headings, bullet lists, quotes, and code blocks.
+  - Internal cross-task links (`#123`, `[Label](#123)`, `[Label](123)`, `task:123`) with keyboard link navigation (`Tab`/`Shift+Tab`) and instant jump (`Enter`).
+  - Visual `📝` note indicator displayed in the tree view for items with notes.
 - **Hierarchical Folding**:
   - Collapse (`zc`, `h`), Expand (`zo`, `l`), Toggle (`za`), Close All (`zM`), Open All (`zR`).
   - Child count badges for collapsed subtrees (`▶ [3]`).
@@ -156,6 +161,7 @@ HalpTask follows standard Unix/POSIX (`nix`) CLI flag conventions, supporting do
 | `<space> t p` | Tasks | Mark In Progress `[~]` (Orange ~) |
 | `<space> t s` | Tasks | Mark Todo `[ ]` (Gray empty) |
 | `<space> t a` / `T` | Tasks | Manage task tags & labels |
+| `<space> n` / `N` | Tasks | Open / edit task Markdown note |
 | `<space> t D` | Tasks | Toggle default creation type (`bullet` <-> `task`) |
 | `<space> c c` | Config | Open interactive Config Dashboard modal |
 | `<space> c a` | Config | Toggle Auto-Save |

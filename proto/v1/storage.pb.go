@@ -30,6 +30,7 @@ type ItemProto struct {
 	NodeId    string
 	Deleted   bool
 	Version   uint64
+	Note      string
 }
 
 type TreeProto struct {
@@ -126,6 +127,10 @@ func MarshalItemProto(item *ItemProto) ([]byte, error) {
 	// Field 12: version (uint64)
 	if item.Version != 0 {
 		buf = appendVarintField(buf, 12, item.Version)
+	}
+	// Field 13: note (string)
+	if item.Note != "" {
+		buf = appendStringField(buf, 13, item.Note)
 	}
 
 	return buf, nil
@@ -280,6 +285,13 @@ func UnmarshalItemProto(data []byte) (*ItemProto, error) {
 			}
 			offset += n
 			item.Version = val
+		case 13: // note
+			strBytes, n, err := readBytes(data[offset:])
+			if err != nil {
+				return nil, err
+			}
+			offset += n
+			item.Note = string(strBytes)
 		default:
 			n, err := skipField(data[offset:], wireType)
 			if err != nil {

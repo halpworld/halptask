@@ -607,36 +607,36 @@ func TestExistingItemEscapeNotDeleted(t *testing.T) {
 
 func TestTitleBarVersionAndSpace(t *testing.T) {
 	app := AppModel{
-		Version: "0.0.5",
+		Version: "0.0.6",
 		Width:   80,
 	}
 
-	// 1. Standard width without update -> title bar includes current version v0.0.5
+	// 1. Standard width without update -> title bar includes current version v0.0.6
 	renderedBar := app.renderTitleBar()
-	if !strings.Contains(renderedBar, "v0.0.5") {
-		t.Fatalf("expected title bar to contain current version 'v0.0.5', got %q", renderedBar)
+	if !strings.Contains(renderedBar, "v0.0.6") {
+		t.Fatalf("expected title bar to contain current version 'v0.0.6', got %q", renderedBar)
 	}
 
 	// 2. Wide terminal width (80) with update available -> includes current version AND update version
 	app.UpdateAvailable = true
-	app.UpdateInfo = &updater.ReleaseInfo{Version: "0.0.6"}
+	app.UpdateInfo = &updater.ReleaseInfo{Version: "0.0.7"}
 
 	renderedBarWithUpdate := app.renderTitleBar()
-	if !strings.Contains(renderedBarWithUpdate, "v0.0.5") {
-		t.Fatalf("expected title bar to contain current version 'v0.0.5', got %q", renderedBarWithUpdate)
-	}
 	if !strings.Contains(renderedBarWithUpdate, "v0.0.6") {
-		t.Fatalf("expected title bar to contain update version 'v0.0.6' when space is available, got %q", renderedBarWithUpdate)
+		t.Fatalf("expected title bar to contain current version 'v0.0.6', got %q", renderedBarWithUpdate)
+	}
+	if !strings.Contains(renderedBarWithUpdate, "v0.0.7") {
+		t.Fatalf("expected title bar to contain update version 'v0.0.7' when space is available, got %q", renderedBarWithUpdate)
 	}
 
 	// 3. Narrow terminal width (48) with update available -> space is limited, so update version is omitted to fit available space
 	app.Width = 48
 	renderedNarrow := app.renderTitleBar()
-	if !strings.Contains(renderedNarrow, "v0.0.5") {
-		t.Fatalf("expected title bar to retain current version 'v0.0.5' under narrow width, got %q", renderedNarrow)
+	if !strings.Contains(renderedNarrow, "v0.0.6") {
+		t.Fatalf("expected title bar to retain current version 'v0.0.6' under narrow width, got %q", renderedNarrow)
 	}
-	if strings.Contains(renderedNarrow, "v0.0.6") {
-		t.Fatalf("expected title bar to omit update version 'v0.0.6' when space is insufficient, got %q", renderedNarrow)
+	if strings.Contains(renderedNarrow, "v0.0.7") {
+		t.Fatalf("expected title bar to omit update version 'v0.0.7' when space is insufficient, got %q", renderedNarrow)
 	}
 }
 func TestJumpToID(t *testing.T) {
@@ -701,5 +701,68 @@ func TestJumpToID(t *testing.T) {
 	app = m.(AppModel)
 	if !strings.Contains(app.StatusMsg, "Item ID #999 not found") {
 		t.Fatalf("expected error status msg for missing ID, got %q", app.StatusMsg)
+	}
+}
+
+func TestAppNoteModalIntegration(t *testing.T) {
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "Task 1")
+	r2 := tree.InsertBelow(r1.ID, "Task 2")
+
+	cfg := config.DefaultConfig()
+	app := AppModel{
+		Config:      cfg,
+		Tree:        tree,
+		Mode:        ModeNormal,
+		CursorIndex: 0,
+		SelectedID:  r1.ID,
+		TreeView:    NewTreeView(),
+		NoteModal:   NewNoteModal(80, 24),
+	}
+
+	// 1. Press 'N' to open Note modal
+	m, _ := app.updateNormal(tea.KeyMsg{Runes: []rune{'N'}, Type: tea.KeyRunes})
+	app = m.(AppModel)
+
+	if app.Mode != ModeNote {
+		t.Fatalf("expected ModeNote after pressing 'N', got %v", app.Mode)
+	}
+
+	// Since r1.Note is empty, NoteModal starts in NoteModeEdit
+	if app.NoteModal.Mode != NoteModeEdit {
+		t.Fatalf("expected NoteModeEdit for empty note, got %v", app.NoteModal.Mode)
+	}
+
+	// 2. Type note referencing Task 2 (#r2.ID)
+	noteText := "This note points to #" + r2.ID
+	app.NoteModal.TextArea.SetValue(noteText)
+
+	// Save note with Esc
+	m, _ = app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	app = m.(AppModel)
+
+	// Modal switches to NoteModeView and updates note on item r1
+	if r1.Note != noteText {
+		t.Fatalf("expected r1.Note to be %q, got %q", noteText, r1.Note)
+	}
+
+	if app.NoteModal.Mode != NoteModeView {
+		t.Fatalf("expected NoteModeView after saving with Esc, got %v", app.NoteModal.Mode)
+	}
+
+	// 3. Press Enter to follow link to r2.ID
+	m, _ = app.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	app = m.(AppModel)
+
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after following task link, got %v", app.Mode)
+	}
+
+	if app.SelectedID != r2.ID {
+		t.Fatalf("expected jump to task ID %s, got %s", r2.ID, app.SelectedID)
+	}
+
+	if !strings.Contains(app.StatusMsg, "Jumped to item #"+r2.ID) {
+		t.Fatalf("expected status msg confirming jump, got %q", app.StatusMsg)
 	}
 }

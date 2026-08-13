@@ -27,6 +27,7 @@ message ItemProto {
   string node_id = 10;
   bool deleted = 11;
   uint64 version = 12;
+  string note = 13;
 }
 
 message TreeProto {

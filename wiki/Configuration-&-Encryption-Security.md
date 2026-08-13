@@ -76,13 +76,25 @@ HalpTask features robust file-level encryption to keep sensitive tasks, legal no
 ┌─────────────────────────────────────────────────────────┐
 │ Header: # HALPTASK-ENCRYPTED-v1\n                       │
 ├─────────────────────────────────────────────────────────┤
-│ Salt:   16 bytes (raw salt)                              │
+│ Salt:   16 bytes (raw salt)                             │
 ├─────────────────────────────────────────────────────────┤
-│ Nonce:  12 bytes (GCM nonce)                             │
+│ Nonce:  12 bytes (GCM nonce)                            │
 ├─────────────────────────────────────────────────────────┤
-│ Payload: AES-256-GCM ciphertext + 16-byte Auth Tag      │
+│ Payload: AES-256-GCM ciphertext + 16-byte Auth Tag     │
+│          (Encrypts Protobuf v1 binary payload)          │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 💾 Protobuf Binary Storage Protocol (`.pb`)
+
+HalpTask uses **Protobuf v1 binary protocol** (`.pb`) for data persistence:
+
+- **High Performance & Compact**: Zero-dependency binary serialization with varint and length-delimited wire encoding.
+- **Schema Versioning**: Root `TreeProto` embeds `schema_version = 1` for future backward/forward compatibility.
+- **Item Hierarchy & Metadata**: Preserves item IDs, title text, task statuses (`TASK_STATUS_TODO`, `TASK_STATUS_IN_PROGRESS`, `TASK_STATUS_DONE`), tags, fold states, timestamps, sequence numbers, and attached Markdown notes (`note`).
+- **Legacy Markdown Auto-Migration**: Legacy `.txt` / `.md` files are parsed and upgraded to `.pb` Protobuf binary payloads while preserving a `.bak` backup file.
 
 ---
 
