@@ -63,6 +63,7 @@ The app operates in one of several modes:
 - `ModeHelp`: Keymaps cheat sheet modal overlay.
 - `ModeTagPicker`: Interactive tag management modal overlay.
 - `ModeConfig`: Interactive configuration dashboard modal overlay.
+- `ModeNote`: Interactive task note modal overlay with Markdown view/edit modes and link navigation.
 
 ### 3. Tree & Item Data Structure (`model/item.go`, `model/tree.go`)
 - Nodes are represented by `*model.Item`:
@@ -71,6 +72,7 @@ The app operates in one of several modes:
   - `IsTask`: Boolean indicating whether item is a task checkbox.
   - `Status`: `StatusNone`, `StatusTodo` (`"todo"`), `StatusInProgress` (`"in_progress"`), or `StatusDone` (`"done"`).
   - `Folded`: Boolean for collapsed subtrees.
+  - `Note`: Markdown note string attached to the item.
   - `Children`: `[]*Item` slice of sub-items.
   - `Parent`: `*Item` pointer to parent node (`nil` for root items).
 - **CRITICAL**: Whenever tree nodes are added, deleted, re-ordered, indented, or loaded, ensure `tree.SetParents()` is called to maintain valid `Parent` pointers.
@@ -86,15 +88,18 @@ The app operates in one of several modes:
 - `tree.Undo()` and `tree.Redo()` swap state stacks and recalculate parent pointers.
 - Structural mutations (add, delete, indent, move up/down) should call `tree.SaveState()` before mutating.
 
-### 6. Storage & Serialization (`model/storage.go`)
-- **Markdown Format**:
-  - Unordered list items: `- Bullet text`
-  - Task items: `- [ ] Todo`, `- [~] In progress`, `- [x] Completed`
-  - Folds: Subtrees with folded parent appending `<!-- fold -->` at end of line.
+### 6. Storage & Serialization (`model/storage.go`, `model/storage_proto.go`, `proto/v1/storage.proto`)
+- **Protobuf v1 Protocol (`.pb`)**:
+  - Primary persistence uses **Protobuf v1 binary storage** (`TreeProto`, `ItemProto`) with schema version `1`.
+  - Defined in [`proto/v1/storage.proto`](file:///Users/kenth/code/halptask/proto/v1/storage.proto) and implemented with custom zero-dependency marshalling in [`proto/v1/storage.pb.go`](file:///Users/kenth/code/halptask/proto/v1/storage.pb.go).
+  - Serializes IDs, titles, task status, fold states, tags, child hierarchy, creation/update timestamps, versioning, node IDs, and attached Markdown notes (`Note`).
+  - Detailed specification available in [`docs/storage_protocol.md`](file:///Users/kenth/code/halptask/docs/storage_protocol.md).
+- **Legacy Markdown Migration (`MigrateIfNeeded`)**:
+  - Legacy `.txt` / `.md` files are parsed and automatically upgraded to `.pb` Protobuf binary payloads while saving a `.bak` backup file.
 - **Encryption**:
   - Cipher: **AES-256-GCM**
   - Key Derivation: **PBKDF2** with SHA-256 (100,000 iterations + 16-byte random salt + 12-byte nonce).
-  - File Header: `# HALPTASK-ENCRYPTED-v1`.
+  - File Header: `# HALPTASK-ENCRYPTED-v1`. Encrypts raw Protobuf binary payload.
 
 ### 7. Task Tags & Dynamic Inheritance (`model/item.go`, `model/tree.go`)
 - **Direct Tags**: Assigned explicitly to an `Item` node (`Tags []string`), stored in Markdown as `#tagname`.

@@ -703,3 +703,66 @@ func TestJumpToID(t *testing.T) {
 		t.Fatalf("expected error status msg for missing ID, got %q", app.StatusMsg)
 	}
 }
+
+func TestAppNoteModalIntegration(t *testing.T) {
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "Task 1")
+	r2 := tree.InsertBelow(r1.ID, "Task 2")
+
+	cfg := config.DefaultConfig()
+	app := AppModel{
+		Config:      cfg,
+		Tree:        tree,
+		Mode:        ModeNormal,
+		CursorIndex: 0,
+		SelectedID:  r1.ID,
+		TreeView:    NewTreeView(),
+		NoteModal:   NewNoteModal(80, 24),
+	}
+
+	// 1. Press 'N' to open Note modal
+	m, _ := app.updateNormal(tea.KeyMsg{Runes: []rune{'N'}, Type: tea.KeyRunes})
+	app = m.(AppModel)
+
+	if app.Mode != ModeNote {
+		t.Fatalf("expected ModeNote after pressing 'N', got %v", app.Mode)
+	}
+
+	// Since r1.Note is empty, NoteModal starts in NoteModeEdit
+	if app.NoteModal.Mode != NoteModeEdit {
+		t.Fatalf("expected NoteModeEdit for empty note, got %v", app.NoteModal.Mode)
+	}
+
+	// 2. Type note referencing Task 2 (#r2.ID)
+	noteText := "This note points to #" + r2.ID
+	app.NoteModal.TextArea.SetValue(noteText)
+
+	// Save note with Esc
+	m, _ = app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	app = m.(AppModel)
+
+	// Modal switches to NoteModeView and updates note on item r1
+	if r1.Note != noteText {
+		t.Fatalf("expected r1.Note to be %q, got %q", noteText, r1.Note)
+	}
+
+	if app.NoteModal.Mode != NoteModeView {
+		t.Fatalf("expected NoteModeView after saving with Esc, got %v", app.NoteModal.Mode)
+	}
+
+	// 3. Press Enter to follow link to r2.ID
+	m, _ = app.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	app = m.(AppModel)
+
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after following task link, got %v", app.Mode)
+	}
+
+	if app.SelectedID != r2.ID {
+		t.Fatalf("expected jump to task ID %s, got %s", r2.ID, app.SelectedID)
+	}
+
+	if !strings.Contains(app.StatusMsg, "Jumped to item #"+r2.ID) {
+		t.Fatalf("expected status msg confirming jump, got %q", app.StatusMsg)
+	}
+}

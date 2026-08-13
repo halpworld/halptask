@@ -40,6 +40,7 @@ Pressing `<space>` or pressing the first key of any multi-character command (suc
 | `<space> t p` | `[~]` | Mark as **In Progress** (Orange `~` indicator) |
 | `<space> t d` | `[x]` | Mark as **Done** (Green `X`, faint strikethrough text) |
 | `<space> t a` | `🏷️` | Open **Tag / Label Manager** overlay |
+| `<space> n` / `<space> t n` | `📝` | Open / Edit **Task Markdown Note** modal |
 | `<space> t D` | `⚙️` | Toggle default item creation type (`bullet` <-> `task`) |
 
 ### 3. Fold Menu (`<space> z ...`)
@@ -112,6 +113,7 @@ You can also use single or double-character Vim motions directly without pressin
 | `K` | Move bullet up among siblings |
 | `t` | Toggle bullet into task / Cycle task status |
 | `T` | Open **Tag / Label Manager** overlay |
+| `N` | Open / Edit **Task Markdown Note** modal |
 | `fc` | Toggle hide/show `[x]` completed tasks |
 | `da` | Delete all `[x]` completed tasks |
 | `ww` | Quick save file to disk |

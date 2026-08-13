@@ -49,7 +49,16 @@ When you need direct, non-cycling status assignment:
 - `<space> t p`: Mark **In Progress** (`[~]`) instantly.
 - `<space> t s`: Mark **Todo** (`[ ]`) instantly.
 - `<space> t a`: Open **Tag Manager** (`🏷️`).
+- `<space> n` / `N`: Open / Edit **Task Markdown Note** (`📝`).
 - `<space> t D`: Toggle **Default Creation Type** (`bullet` <-> `task`).
+
+### 📝 Task Notes & Cross-Task Linking (`N` or `<space> n`)
+Attach detailed Markdown context to any task item.
+- Press `N` or `<space> n` to open the Note modal.
+- Supports rich Markdown formatting (headings `#`, lists `-`, quotes `>`, code blocks ` ``` `).
+- Write internal task links in flexible formats: `#123`, `[Label](#123)`, `[Label](123)`, `task:123`.
+- Press `Tab` / `Shift+Tab` to cycle between links in View mode.
+- Press `Enter` on a focused link to instantly close the note and navigate to that task in your tree view!
 
 ---
 

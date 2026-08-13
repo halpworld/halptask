@@ -186,6 +186,12 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 			formattedText = searchMatchStyle.Render(item.Text)
 		}
 
+		// Note indicator rendering
+		if item.Note != "" {
+			noteStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#bb9af7"))
+			formattedText += " " + noteStyle.Render("📝")
+		}
+
 		// Tag rendering (Direct & Inherited)
 		tagStr := tv.formatTags(item)
 		if tagStr != "" {

@@ -40,6 +40,7 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> t p` | `[~]` | Mark In Progress | Sets status to **In Progress** (Orange `~`) |
 | `<space> t d` | `[x]` | Mark Done | Sets status to **Done** (Green `X`, strikethrough) |
 | `<space> t a` | `🏷️` | Manage tags | Opens interactive Tag / Label Manager modal |
+| `<space> n` / `<space> t n` | `📝` | Task Notes | Opens interactive Task Markdown Note modal |
 | `<space> t D` | `⚙️` | Toggle default | Switches default creation mode (`bullet` <-> `task`) |
 
 ---

@@ -30,6 +30,8 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "t", "p"}, KeyString: "p", Label: "mark in-progress [~]", Category: "Tasks"},
 		{Keys: []string{" ", "t", "s"}, KeyString: "s", Label: "mark todo [ ]", Category: "Tasks"},
 		{Keys: []string{" ", "t", "a"}, KeyString: "a", Label: "manage tags / labels", Category: "Tasks"},
+		{Keys: []string{" ", "t", "n"}, KeyString: "n", Label: "open/edit task note", Category: "Tasks"},
+		{Keys: []string{" ", "n"}, KeyString: "n", Label: "open/edit task note", Category: "Tasks"},
 		{Keys: []string{" ", "t", "D"}, KeyString: "D", Label: "toggle default type", Category: "Tasks"},
 
 		// Leader Archive operations
@@ -97,6 +99,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{"f", "f"}, KeyString: "ff", Label: "zoom / hoist subtree", Category: "Nav"},
 		{Keys: []string{"t"}, KeyString: "t", Label: "toggle/cycle task status", Category: "Tasks"},
 		{Keys: []string{"T"}, KeyString: "T", Label: "manage tags / labels", Category: "Tasks"},
+		{Keys: []string{"N"}, KeyString: "N", Label: "open/edit task note", Category: "Tasks"},
 		{Keys: []string{"u"}, KeyString: "u", Label: "undo", Category: "Edit"},
 		{Keys: []string{"ctrl+r"}, KeyString: "ctrl+r", Label: "redo", Category: "Edit"},
 		{Keys: []string{"/"}, KeyString: "/", Label: "search", Category: "Nav"},

@@ -20,6 +20,7 @@ const (
 	ModeConfig
 	ModeJumpToID
 	ModeArchive
+	ModeNote
 )
 
 func (m AppMode) String() string {
@@ -42,6 +43,8 @@ func (m AppMode) String() string {
 		return "JUMP"
 	case ModeArchive:
 		return "ARCHIVE"
+	case ModeNote:
+		return "NOTE"
 	default:
 		return "NORMAL"
 	}
