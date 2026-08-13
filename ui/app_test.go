@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -826,6 +827,46 @@ func TestFocusModeIntegration(t *testing.T) {
 	app.tryExecuteKeyBinding([]string{" ", "f", "o"})
 	if r2.IsFocused {
 		t.Fatalf("expected r2 focus to be cleared after '<space> f o'")
+	}
+}
+
+func TestAppNoteAutoSaveOnEdit(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "notes_test.pb")
+
+	tree := model.NewTree()
+	item := tree.InsertBelow("", "Note Item")
+	storage := model.NewStorage(filePath, false)
+	_ = storage.Save(tree, "")
+
+	app := AppModel{
+		Config:      config.DefaultConfig(),
+		Storage:     storage,
+		Tree:        tree,
+		Mode:        ModeNormal,
+		CursorIndex: 0,
+		SelectedID:  item.ID,
+		TreeView:    NewTreeView(),
+		NoteModal:   NewNoteModal(80, 24),
+	}
+
+	// Open note modal
+	m, _ := app.updateNormal(tea.KeyMsg{Runes: []rune{'N'}, Type: tea.KeyRunes})
+	app = m.(AppModel)
+
+	// Set note value and save via Esc
+	app.NoteModal.TextArea.SetValue("Super solid note text")
+	m, _ = app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	app = m.(AppModel)
+
+	// Verify PendingAutoSave was set and file updated
+	loadedTree, err := storage.Load("")
+	if err != nil {
+		t.Fatalf("failed to load storage file: %v", err)
+	}
+
+	if len(loadedTree.Roots) != 1 || loadedTree.Roots[0].Note != "Super solid note text" {
+		t.Fatalf("expected loaded note to be 'Super solid note text', got %q", loadedTree.Roots[0].Note)
 	}
 }
 

@@ -88,10 +88,9 @@ func (nm *NoteModal) SetItem(item *model.Item, tree *model.Tree) {
 	nm.StatusMsg = ""
 	nm.ActiveLink = 0
 
+	nm.TextArea.Reset()
 	if item != nil {
 		nm.TextArea.SetValue(item.Note)
-	} else {
-		nm.TextArea.SetValue("")
 	}
 	nm.refreshLinksAndRender()
 
@@ -106,8 +105,8 @@ func (nm *NoteModal) SetItem(item *model.Item, tree *model.Tree) {
 }
 
 // ExtractLinks parses task links in formats:
-// 1. [Label](#123) or [Label](123)
-// 2. #123 or task:123
+// 1. [Label](#123) or [Label](123) or [Label](task:123)
+// 2. Standalone #123 or task:123
 func ExtractLinks(text string) []NoteLink {
 	var links []NoteLink
 	if text == "" {
@@ -135,17 +134,27 @@ func ExtractLinks(text string) []NoteLink {
 		}
 	}
 
-	// Pattern 2: Standalone #id or task:id not inside markdown link bracket
-	standaloneRegex := regexp.MustCompile(`(?:^|[\s,.(])(?:#|task:)([a-zA-Z0-9_-]+)`)
+	// Pattern 2: Standalone #123 or task:123 (numeric IDs or explicit task:prefix)
+	standaloneRegex := regexp.MustCompile(`(?:^|[\s,.(])(?:#([0-9]+)|task:([a-zA-Z0-9_-]+))`)
 	matches2 := standaloneRegex.FindAllStringSubmatchIndex(text, -1)
 
 	for _, m := range matches2 {
 		if len(m) >= 4 {
-			targetID := text[m[2]:m[3]]
+			var targetID string
 			fullStart, fullEnd := m[0], m[1]
 
+			if m[2] != -1 && m[3] != -1 {
+				targetID = text[m[2]:m[3]]
+			} else if len(m) >= 6 && m[4] != -1 && m[5] != -1 {
+				targetID = text[m[4]:m[5]]
+			}
+
+			if targetID == "" {
+				continue
+			}
+
 			// Adjust start if prefix character was captured
-			prefixChar := text[m[0]:m[2]]
+			prefixChar := text[m[0]:m[1]]
 			if idx := strings.Index(prefixChar, "#"); idx != -1 {
 				fullStart = m[0] + idx
 			} else if idx := strings.Index(prefixChar, "task:"); idx != -1 {
@@ -161,9 +170,13 @@ func ExtractLinks(text string) []NoteLink {
 				}
 			}
 			if !overlap {
+				disp := fmt.Sprintf("#%s", targetID)
+				if strings.HasPrefix(text[fullStart:fullEnd], "task:") {
+					disp = fmt.Sprintf("task:%s", targetID)
+				}
 				links = append(links, NoteLink{
 					TargetID: targetID,
-					Display:  fmt.Sprintf("#%s", targetID),
+					Display:  disp,
 					StartPos: fullStart,
 					EndPos:   fullEnd,
 				})
@@ -192,6 +205,157 @@ func (nm *NoteModal) refreshLinksAndRender() {
 	nm.Viewport.SetContent(rendered)
 }
 
+func formatLinksInLine(line string, globalLinks []NoteLink, activeLinkIdx int, tree *model.Tree) string {
+	if line == "" || len(globalLinks) == 0 {
+		return line
+	}
+
+	normalLinkStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#7dcfff")).
+		Underline(true)
+
+	activeLinkStyle := lipgloss.NewStyle().
+		Background(lipgloss.Color("#7dcfff")).
+		Foreground(lipgloss.Color("#1a1b26")).
+		Bold(true).
+		Underline(true)
+
+	type matchInfo struct {
+		start    int
+		end      int
+		targetID string
+		display  string
+		linkIdx  int
+	}
+
+	var matches []matchInfo
+
+	mdRegex := regexp.MustCompile(`\[([^\]]+)\]\((?:#|task:)?([a-zA-Z0-9_-]+)\)`)
+	for _, m := range mdRegex.FindAllStringSubmatchIndex(line, -1) {
+		if len(m) >= 6 {
+			fullStart, fullEnd := m[0], m[1]
+			label := line[m[2]:m[3]]
+			targetID := line[m[4]:m[5]]
+
+			linkIdx := -1
+			for idx, gl := range globalLinks {
+				if gl.TargetID == targetID && strings.Contains(gl.Display, label) {
+					linkIdx = idx
+					break
+				}
+			}
+
+			matches = append(matches, matchInfo{
+				start:    fullStart,
+				end:      fullEnd,
+				targetID: targetID,
+				display:  label,
+				linkIdx:  linkIdx,
+			})
+		}
+	}
+
+	standaloneRegex := regexp.MustCompile(`(?:^|[\s,.(])(?:#([0-9]+)|task:([a-zA-Z0-9_-]+))`)
+	for _, m := range standaloneRegex.FindAllStringSubmatchIndex(line, -1) {
+		var targetID string
+		fullStart, fullEnd := m[0], m[1]
+
+		if m[2] != -1 && m[3] != -1 {
+			targetID = line[m[2]:m[3]]
+		} else if len(m) >= 6 && m[4] != -1 && m[5] != -1 {
+			targetID = line[m[4]:m[5]]
+		}
+
+		if targetID == "" {
+			continue
+		}
+
+		prefixChar := line[m[0]:m[1]]
+		if idx := strings.Index(prefixChar, "#"); idx != -1 {
+			fullStart = m[0] + idx
+		} else if idx := strings.Index(prefixChar, "task:"); idx != -1 {
+			fullStart = m[0] + idx
+		}
+
+		overlap := false
+		for _, ex := range matches {
+			if fullStart >= ex.start && fullEnd <= ex.end {
+				overlap = true
+				break
+			}
+		}
+
+		if !overlap {
+			disp := "#" + targetID
+			if strings.HasPrefix(line[fullStart:fullEnd], "task:") {
+				disp = "task:" + targetID
+			}
+
+			linkIdx := -1
+			for idx, gl := range globalLinks {
+				if gl.TargetID == targetID && (gl.Display == disp || gl.Display == "#"+targetID) {
+					linkIdx = idx
+					break
+				}
+			}
+
+			matches = append(matches, matchInfo{
+				start:    fullStart,
+				end:      fullEnd,
+				targetID: targetID,
+				display:  disp,
+				linkIdx:  linkIdx,
+			})
+		}
+	}
+
+	if len(matches) == 0 {
+		return line
+	}
+
+	for i := 0; i < len(matches)-1; i++ {
+		for j := i + 1; j < len(matches); j++ {
+			if matches[i].start > matches[j].start {
+				matches[i], matches[j] = matches[j], matches[i]
+			}
+		}
+	}
+
+	var buf strings.Builder
+	lastEnd := 0
+
+	for _, m := range matches {
+		if m.start < lastEnd {
+			continue
+		}
+		buf.WriteString(line[lastEnd:m.start])
+
+		targetExists := (tree != nil && tree.FindItem(m.targetID) != nil)
+		label := m.display
+
+		var rendered string
+		if m.linkIdx >= 0 && m.linkIdx == activeLinkIdx {
+			if targetExists {
+				rendered = activeLinkStyle.Render(fmt.Sprintf("▶ %s (#%s)", label, m.targetID))
+			} else {
+				rendered = activeLinkStyle.Render(fmt.Sprintf("▶ %s (#%s?)", label, m.targetID))
+			}
+		} else {
+			if targetExists {
+				rendered = normalLinkStyle.Render(fmt.Sprintf("%s (#%s)", label, m.targetID))
+			} else {
+				rendered = normalLinkStyle.Render(fmt.Sprintf("%s (#%s?)", label, m.targetID))
+			}
+		}
+
+		buf.WriteString(rendered)
+		lastEnd = m.end
+	}
+
+	buf.WriteString(line[lastEnd:])
+	return buf.String()
+}
+
 func (nm *NoteModal) RenderMarkdownView(text string) string {
 	if strings.TrimSpace(text) == "" {
 		emptyStyle := lipgloss.NewStyle().
@@ -207,16 +371,6 @@ func (nm *NoteModal) RenderMarkdownView(text string) string {
 	bulletStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#9ece6a"))
 	codeStyle := lipgloss.NewStyle().Background(lipgloss.Color("#24283b")).Foreground(lipgloss.Color("#9ece6a"))
 	quoteStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#e0af68")).Italic(true)
-
-	normalLinkStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#7dcfff")).
-		Underline(true)
-
-	activeLinkStyle := lipgloss.NewStyle().
-		Background(lipgloss.Color("#7dcfff")).
-		Foreground(lipgloss.Color("#1a1b26")).
-		Bold(true).
-		Underline(true)
 
 	lines := strings.Split(text, "\n")
 	var formattedLines []string
@@ -237,6 +391,9 @@ func (nm *NoteModal) RenderMarkdownView(text string) string {
 			formattedLines = append(formattedLines, codeStyle.Render("  "+line))
 			continue
 		}
+
+		// First format any links in raw line
+		line = formatLinksInLine(line, nm.Links, nm.ActiveLink, nm.Tree)
 
 		// Headers
 		if strings.HasPrefix(trimmed, "# ") {
@@ -263,46 +420,6 @@ func (nm *NoteModal) RenderMarkdownView(text string) string {
 			prefix := trimmed[:2]
 			rest := trimmed[2:]
 			line = bulletStyle.Render(prefix) + rest
-		}
-
-		// Format links in line
-		for linkIdx, link := range nm.Links {
-			linkText := link.Display
-			targetLabel := link.Display
-			if strings.HasPrefix(linkText, "[") {
-				// extract label from [label](#id)
-				if closeBracket := strings.Index(linkText, "]"); closeBracket != -1 {
-					targetLabel = linkText[1:closeBracket]
-				}
-			}
-
-			// Check if link target exists in tree
-			targetExists := false
-			if nm.Tree != nil && nm.Tree.FindItem(link.TargetID) != nil {
-				targetExists = true
-			}
-
-			var renderedLink string
-			if linkIdx == nm.ActiveLink {
-				if targetExists {
-					renderedLink = activeLinkStyle.Render(fmt.Sprintf("▶ %s (#%s)", targetLabel, link.TargetID))
-				} else {
-					renderedLink = activeLinkStyle.Render(fmt.Sprintf("▶ %s (#%s?)", targetLabel, link.TargetID))
-				}
-			} else {
-				if targetExists {
-					renderedLink = normalLinkStyle.Render(fmt.Sprintf("%s (#%s)", targetLabel, link.TargetID))
-				} else {
-					renderedLink = normalLinkStyle.Render(fmt.Sprintf("%s (#%s?)", targetLabel, link.TargetID))
-				}
-			}
-
-			// Substitute link text representation
-			if strings.Contains(line, link.Display) {
-				line = strings.Replace(line, link.Display, renderedLink, 1)
-			} else if strings.Contains(line, "#"+link.TargetID) {
-				line = strings.Replace(line, "#"+link.TargetID, renderedLink, 1)
-			}
 		}
 
 		formattedLines = append(formattedLines, line)

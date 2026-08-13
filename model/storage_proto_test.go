@@ -5,6 +5,7 @@ import (
 	"compress/flate"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/kenth/halptask/model"
@@ -312,5 +313,37 @@ func TestItemNoteSerializationAndCloning(t *testing.T) {
 	pItem := parsed.Roots[0]
 	if pItem.Note != item.Note {
 		t.Fatalf("expected parsed note %q, got %q", item.Note, pItem.Note)
+	}
+}
+
+func TestEmptyProtobufStorageLoad(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "empty_tasks.pb")
+
+	// Create empty tree and save as protobuf
+	emptyTree := model.NewTree()
+	storage := model.NewStorage(filePath, false)
+	if err := storage.Save(emptyTree, ""); err != nil {
+		t.Fatalf("failed to save empty protobuf file: %v", err)
+	}
+
+	// Pad file with dummy padding bytes so file size > 50 bytes
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		t.Fatalf("failed to open file for append: %v", err)
+	}
+	// Append dummy spaces / comment bytes to inflate file size
+	_, _ = f.Write([]byte(strings.Repeat(" ", 60)))
+	_ = f.Close()
+
+	// Load tree from file
+	loadedTree, err := storage.Load("")
+	if err != nil {
+		t.Fatalf("storage.Load failed: %v", err)
+	}
+
+	// Should return valid empty tree without falling back to ParseMarkdown or creating gibberish items
+	if len(loadedTree.Roots) != 0 {
+		t.Fatalf("expected 0 roots for empty tree, got %d items (possible markdown fallback gibberish)", len(loadedTree.Roots))
 	}
 }

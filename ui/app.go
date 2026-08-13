@@ -535,13 +535,34 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.NoteModal == nil {
 				m.NoteModal = NewNoteModal(m.Width, m.Height)
 			}
-			if msg.String() == "esc" && m.NoteModal.Mode == NoteModeView {
-				m.Mode = ModeNormal
-				_ = m.saveFile()
-				return m, nil
+			oldNoteText := ""
+			if m.NoteModal.Item != nil {
+				oldNoteText = m.NoteModal.Item.Note
 			}
+
+			if m.NoteModal.Mode == NoteModeView {
+				switch msg.String() {
+				case "esc":
+					m.Mode = ModeNormal
+					m.PendingAutoSave = true
+					_ = m.saveFile()
+					return m, nil
+				case "q":
+					m.PendingAutoSave = true
+					_ = m.saveFile()
+					return m, tea.Quit
+				}
+			}
+
 			var jumpTargetID string
 			m.NoteModal, cmd, jumpTargetID = m.NoteModal.Update(msg)
+
+			// Detect note text mutation (e.g. exiting edit mode or pressing Ctrl+S)
+			if m.NoteModal.Item != nil && m.NoteModal.Item.Note != oldNoteText {
+				m.PendingAutoSave = true
+				_ = m.saveFile()
+			}
+
 			if m.NoteModal.StatusMsg != "" {
 				m.StatusMsg = m.NoteModal.StatusMsg
 			}
@@ -572,6 +593,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.StatusMsg = fmt.Sprintf("Item #%s referenced in note not found", jumpTargetID)
 				}
+				m.PendingAutoSave = true
 				_ = m.saveFile()
 			}
 			newModel, cmd = m, cmd

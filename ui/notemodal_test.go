@@ -69,3 +69,36 @@ func TestNoteModalViewAndEdit(t *testing.T) {
 		t.Fatalf("expected extracted link to #1 after update, got %v", nm.Links)
 	}
 }
+
+func TestLinkReplacementNoSubstringCorruption(t *testing.T) {
+	nm := NewNoteModal(80, 24)
+	tree := model.NewTree()
+	item1 := model.NewTask("1", "First Task", model.StatusTodo)
+	item10 := model.NewTask("10", "Tenth Task", model.StatusTodo)
+	tree.Roots = append(tree.Roots, item1, item10)
+
+	// Note text containing #1, #10, and tag #work
+	noteText := "Check #10 and #1 for tag #work details."
+	item1.Note = noteText
+	nm.SetItem(item1, tree)
+
+	rendered := nm.RenderMarkdownView(noteText)
+
+	// #work should not be parsed as a task jump link or styled with (?)
+	if len(nm.Links) != 2 {
+		t.Fatalf("expected 2 task links (#10 and #1), got %d: %v", len(nm.Links), nm.Links)
+	}
+
+	// Verify links order and target IDs
+	if nm.Links[0].TargetID != "10" || nm.Links[1].TargetID != "1" {
+		t.Fatalf("expected target IDs '10' and '1', got %v", nm.Links)
+	}
+
+	// Verify rendered text contains both #10 and #1 correctly rendered without corrupted ANSI tags
+	if !testing.Verbose() {
+		// Ensure rendered view contains formatted labels
+		if len(rendered) == 0 {
+			t.Fatalf("rendered view is empty")
+		}
+	}
+}

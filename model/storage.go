@@ -74,6 +74,17 @@ func isNonDataConfigFile(filePath string) bool {
 		strings.Contains(lower, "config.yaml")
 }
 
+func IsProtobufData(rawBytes []byte, filePath string) bool {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	if ext == ".pb" || ext == ".halp" {
+		return true
+	}
+	if len(rawBytes) >= 2 && rawBytes[0] == 0x08 && rawBytes[1] == 0x01 {
+		return true
+	}
+	return false
+}
+
 func (s *Storage) MigrateIfNeeded(passphrase string) (bool, string, error) {
 	if isNonDataConfigFile(s.FilePath) {
 		return false, s.FilePath, nil
@@ -102,7 +113,11 @@ func (s *Storage) MigrateIfNeeded(passphrase string) (bool, string, error) {
 	}
 
 	// Check if already valid Protobuf
-	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && (len(tree.Roots) > 0 || len(rawBytes) < 50) {
+	if IsProtobufData(rawBytes, s.FilePath) {
+		if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil {
+			return false, s.FilePath, nil
+		}
+	} else if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && len(tree.Roots) > 0 {
 		return false, s.FilePath, nil
 	}
 
@@ -174,12 +189,20 @@ func (s *Storage) Load(passphrase string) (*Tree, error) {
 		content = decrypted
 	}
 
-	// First try decoding as Protobuf
-	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && (len(tree.Roots) > 0 || len(rawBytes) < 50) {
+	// Try decoding as Protobuf first
+	if IsProtobufData(rawBytes, s.FilePath) {
+		tree, err := ParseProtobuf(rawBytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse protobuf storage file: %w", err)
+		}
 		return tree, nil
 	}
 
-	// Fallback to legacy Markdown parsing
+	if tree, err := ParseProtobuf(rawBytes); err == nil && tree != nil && len(tree.Roots) > 0 {
+		return tree, nil
+	}
+
+	// Fallback to legacy Markdown parsing for non-protobuf files
 	return ParseMarkdown(content), nil
 }
 
