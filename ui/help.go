@@ -83,10 +83,19 @@ func (h *HelpModal) Render(width, height int) string {
 			},
 		},
 		{
+			Title: "Archive Operations",
+			Items: [][2]string{
+				{"<space> a a", "Archive selected item & subtree"},
+				{"<space> a c", "Archive all completed tasks"},
+				{"<space> a v / r", "Open interactive Archive View modal"},
+			},
+		},
+		{
 			Title: "Leader Commands (<space>)",
 			Items: [][2]string{
 				{"<space> b ...", "Bullet actions (new, edit, indent, move)"},
 				{"<space> t ...", "Task actions (toggle, done, in-progress)"},
+				{"<space> a ...", "Archive actions (archive item/completed, view modal)"},
 				{"<space> c ...", "Config dashboard & toggles (theme, auto-save, edit)"},
 				{"<space> z ...", "Fold actions (close, open, toggle all)"},
 				{"<space> e ...", "Encryption settings (toggle, passphrase)"},

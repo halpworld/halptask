@@ -13,6 +13,7 @@ Configuration settings are stored in YAML format at `~/.config/halptask/config.y
 auto_save: true
 check_updates: true
 data_file: ~/.config/halptask/data.txt
+archive_file: ~/.config/halptask/archive.dat
 default_item_type: bullet # Options: "bullet" or "task"
 encrypted: false
 indent_spaces: 2
@@ -29,6 +30,7 @@ theme: default # Options: "default", "tokyonight", "catppuccin", "dracula", "nor
 | `auto_save` | Boolean | `true` | Automatically saves tree modifications to disk in real-time. |
 | `check_updates` | Boolean | `true` | Checks for new GitHub release versions on launch non-intrusively. |
 | `data_file` | String | `~/.config/halptask/data.txt` | Path to default Markdown storage file. |
+| `archive_file` | String | `~/.config/halptask/archive.dat` | Path to compressed archive storage file. |
 | `default_item_type` | String | `bullet` | Default node type when creating new items (`bullet` or `task`). |
 | `encrypted` | Boolean | `false` | Specifies whether default data file uses AES-256 encryption. |
 | `indent_spaces` | Integer | `2` | Number of visual indentation spaces per tree depth level. |

@@ -76,6 +76,19 @@ Keep your workplace tidy with completed task management shortcuts:
 
 ---
 
+## 📦 5. Long-Term Task Archiving & Schema-Safe Storage (`<space> a ...`)
+
+For tasks you have finished but want to retain long-term history for audit or retrieval:
+
+- **`<space> a a` (Archive Selected Item)**: Moves the selected node (and its entire subtree) out of your active file into compressed archive storage (`archive.dat`).
+- **`<space> a c` (Archive Completed Tasks)**: Sweeps all `[x]` completed tasks across the document and archives them automatically.
+- **`<space> a v` / `<space> a r` (Archive Browser Modal)**: Launches the interactive Archive View modal to filter, view subtree details, restore entries back into your active tree (`r`), or permanently delete (`d`).
+
+> [!NOTE]
+> Archive storage uses **Gzip compression** to save disk space and automatically inherits your file **AES-256-GCM encryption** passphrase! Schema updates in future versions automatically migrate archived items upon restoration.
+
+---
+
 ## 🏷️ 5. Dynamic Tag Inheritance Secrets
 
 HalpTask features a sophisticated tag hierarchy system:

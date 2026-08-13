@@ -43,6 +43,7 @@
 - **Hierarchical Outliner & Folding**: Collapse subtrees (`zc`), expand (`zo`), toggle (`za`), or fold everything (`zM`/`zR`) with dynamic child counters.
 - **Task Management**: Convert bullets into rich tasks with status cycling: `[ ]` Todo ➔ `[~]` In Progress ➔ `[x]` Done.
 - **Tag & Label System 🏷️**: Assign direct tags (`T` / `<space> t a`) with custom emojis & colors. Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`).
+- **Compressed & Encrypted Task Archiving 📦**: Archive completed tasks (`<space> a c`) or selected subtrees (`<space> a a`) into schema-safe gzip-compressed storage (`archive.dat`) with interactive Archive Browser modal (`<space> a v`).
 - **Live Dashboard Panel (`<space> d`)**: Real-time task statistics, completion progress bar (`[████░░░░] 50%`), and active in-progress task focus view.
 - **AES-256-GCM Encryption**: Secure sensitive task vaults with strong passphrase protection and zero plaintext memory leakage.
 - **Plaintext Markdown Storage**: Standard bullet and checkbox format (`~/.config/halptask/data.txt`), compatible with standard text editors.

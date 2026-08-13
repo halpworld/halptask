@@ -71,6 +71,10 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
   - Assign direct tags (`T` or `<space> t a`) with emojis and customizable colors.
   - Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`). Unindenting/moving subtasks automatically cleans up inherited tags.
   - Plain text Markdown storage as `#tagname`.
+- **Task Archiving 📦**:
+  - Archive selected bullet/task subtrees (`<space> a a`) or sweep all completed tasks (`<space> a c`).
+  - Gzip-compressed and AES-256-GCM encrypted storage (`archive.dat`) for minimal disk usage and long-term schema compatibility.
+  - Interactive Archive Browser modal (`<space> a v` / `<space> a r`) to filter, inspect, restore (`r`), or permanently delete (`d`).
 - **Hierarchical Folding**:
   - Collapse (`zc`, `h`), Expand (`zo`, `l`), Toggle (`za`), Close All (`zM`), Open All (`zR`).
   - Child count badges for collapsed subtrees (`▶ [3]`).

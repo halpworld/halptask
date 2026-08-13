@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Tree struct {
@@ -790,3 +791,66 @@ func (t *Tree) GetInProgressTasks() []TaskWithContext {
 	recurse(t.Roots)
 	return result
 }
+
+// GetParentPath returns the formatted parent context string for an item (e.g. "Work > Project A").
+func (t *Tree) GetParentPath(item *Item) string {
+	if item == nil || item.Parent == nil {
+		return ""
+	}
+	var ancestorTexts []string
+	curr := item.Parent
+	for curr != nil {
+		if curr.Text != "" {
+			ancestorTexts = append([]string{curr.Text}, ancestorTexts...)
+		}
+		curr = curr.Parent
+	}
+	return strings.Join(ancestorTexts, " > ")
+}
+
+// ArchiveItem removes the item with the given ID from the tree and returns the item along with its parent path.
+func (t *Tree) ArchiveItem(id string) (*Item, string) {
+	t.SetParents()
+	target := t.FindItem(id)
+	if target == nil {
+		return nil, ""
+	}
+	parentPath := t.GetParentPath(target)
+	t.Delete(id)
+	t.SetParents()
+	return target, parentPath
+}
+
+// ArchiveCompleted removes all completed tasks from the tree and returns them as ArchivedEntry structs.
+func (t *Tree) ArchiveCompleted() []*ArchivedEntry {
+	t.SetParents()
+	var entries []*ArchivedEntry
+	now := time.Now()
+
+	var collectAndRemove func(items []*Item) []*Item
+	collectAndRemove = func(items []*Item) []*Item {
+		var remaining []*Item
+		for _, item := range items {
+			if item.IsTask && item.Status == StatusDone {
+				parentPath := t.GetParentPath(item)
+				entries = append(entries, &ArchivedEntry{
+					ID:         item.ID,
+					ArchivedAt: now,
+					Context:    parentPath,
+					Item:       item,
+				})
+				continue
+			}
+			if len(item.Children) > 0 {
+				item.Children = collectAndRemove(item.Children)
+			}
+			remaining = append(remaining, item)
+		}
+		return remaining
+	}
+
+	t.Roots = collectAndRemove(t.Roots)
+	t.SetParents()
+	return entries
+}
+

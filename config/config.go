@@ -22,6 +22,7 @@ type Config struct {
 	LastUpdateCheck string      `yaml:"last_update_check,omitempty"`
 	GithubRepo      string      `yaml:"github_repo"`
 	DataFile        string      `yaml:"data_file"`
+	ArchiveFile     string      `yaml:"archive_file,omitempty"`
 	Encrypted       bool        `yaml:"encrypted"`
 	IndentSpaces    int         `yaml:"indent_spaces"`
 	LeaderKey       string      `yaml:"leader_key"`
@@ -63,12 +64,14 @@ func DefaultConfig() *Config {
 		home = "."
 	}
 	defaultData := filepath.Join(home, ".config", "halptask", "data.txt")
+	defaultArchive := filepath.Join(home, ".config", "halptask", "archive.dat")
 	return &Config{
 		AutoSave:        true,
 		CheckUpdates:    true,
 		UpdateInterval:  "daily",
 		GithubRepo:      "arkalon76/halptask",
 		DataFile:        defaultData,
+		ArchiveFile:     defaultArchive,
 		Encrypted:       false,
 		IndentSpaces:    2,
 		LeaderKey:       " ",
@@ -113,6 +116,14 @@ func LoadConfig() (*Config, error) {
 
 	if err := yaml.Unmarshal(data, cfg); err != nil {
 		return cfg, err
+	}
+	if cfg.DataFile == "" {
+		home, _ := os.UserHomeDir()
+		cfg.DataFile = filepath.Join(home, ".config", "halptask", "data.txt")
+	}
+	if cfg.ArchiveFile == "" {
+		dir := filepath.Dir(cfg.DataFile)
+		cfg.ArchiveFile = filepath.Join(dir, "archive.dat")
 	}
 	if cfg.UpdateInterval == "" {
 		cfg.UpdateInterval = "daily"

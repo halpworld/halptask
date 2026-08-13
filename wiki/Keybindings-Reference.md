@@ -56,7 +56,17 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 
 ---
 
-### 4. Config & Options (`<space> c ...`)
+### 4. Archive Operations (`<space> a ...`)
+
+| Shortcut | Action | Category | Description |
+|---|---|---|---|
+| `<space> a a` | Archive selected item | Archive | Archives the selected bullet/task and its entire subtree |
+| `<space> a c` | Archive completed tasks | Archive | Archives all completed `[x]` tasks across the entire tree |
+| `<space> a v` / `<space> a r` | View / restore archive | Archive | Opens interactive Archive View modal to search, restore, or delete archived items |
+
+---
+
+### 5. Config & Options (`<space> c ...`)
 
 | Shortcut | Command | Description |
 |---|---|---|

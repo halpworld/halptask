@@ -90,6 +90,8 @@ func (wk *WhichKeyModel) GetOptions(allBindings []KeyBinding) (string, []WhichKe
 				groupName = "+goto"
 			} else if nextKey == "w" {
 				groupName = "+save"
+			} else if nextKey == "a" {
+				groupName = "+archive"
 			} else if nextKey == "f" {
 				groupName = "+view/filter"
 			} else {

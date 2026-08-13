@@ -32,6 +32,12 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "t", "a"}, KeyString: "a", Label: "manage tags / labels", Category: "Tasks"},
 		{Keys: []string{" ", "t", "D"}, KeyString: "D", Label: "toggle default type", Category: "Tasks"},
 
+		// Leader Archive operations
+		{Keys: []string{" ", "a", "a"}, KeyString: "a", Label: "archive selected item", Category: "Archive"},
+		{Keys: []string{" ", "a", "c"}, KeyString: "c", Label: "archive completed tasks", Category: "Archive"},
+		{Keys: []string{" ", "a", "v"}, KeyString: "v", Label: "view / restore archive", Category: "Archive"},
+		{Keys: []string{" ", "a", "r"}, KeyString: "r", Label: "view / restore archive", Category: "Archive"},
+
 		// Leader Fold operations
 		{Keys: []string{" ", "z", "c"}, KeyString: "c", Label: "close fold", Category: "Folds"},
 		{Keys: []string{" ", "z", "o"}, KeyString: "o", Label: "open fold", Category: "Folds"},

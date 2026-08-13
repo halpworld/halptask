@@ -92,6 +92,8 @@ type AppModel struct {
 	HelpModal   HelpModal
 	TagModal    *TagModal
 	ConfigModal *ConfigModal
+	ArchiveStore *model.ArchiveStore
+	ArchiveModal *ArchiveModal
 
 	Passphrase string
 	StatusMsg  string
@@ -151,9 +153,17 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 	tv := NewTreeView()
 	tv.ShowItemIDs = showIDs
 
+	archivePath := cfg.ArchiveFile
+	if archivePath == "" {
+		archivePath = config.DefaultConfig().ArchiveFile
+	}
+	archiveStore := model.NewArchiveStore(archivePath, storage.Encrypted)
+
 	m := AppModel{
 		Config:          cfg,
 		Storage:         storage,
+		ArchiveStore:    archiveStore,
+		ArchiveModal:    NewArchiveModal(archiveStore),
 		Tree:            model.NewTree(),
 		UndoStack:       []*model.Tree{},
 		RedoStack:       []*model.Tree{},
@@ -329,6 +339,55 @@ func (m *AppModel) removeNewItem() {
 	m.ensureValidCursor()
 }
 
+func (m *AppModel) restoreArchivedItem(item *model.Item) {
+	if item == nil {
+		return
+	}
+	m.pushUndo()
+	restored := item.Clone()
+	if m.SelectedID != "" {
+		target := m.Tree.FindItem(m.SelectedID)
+		if target != nil {
+			if target.Parent == nil {
+				idx := -1
+				for i, r := range m.Tree.Roots {
+					if r.ID == m.SelectedID {
+						idx = i
+						break
+					}
+				}
+				if idx != -1 {
+					m.Tree.Roots = append(m.Tree.Roots[:idx+1], append([]*model.Item{restored}, m.Tree.Roots[idx+1:]...)...)
+				} else {
+					m.Tree.Roots = append(m.Tree.Roots, restored)
+				}
+			} else {
+				siblings := target.Parent.Children
+				idx := -1
+				for i, s := range siblings {
+					if s.ID == m.SelectedID {
+						idx = i
+						break
+					}
+				}
+				if idx != -1 {
+					target.Parent.Children = append(siblings[:idx+1], append([]*model.Item{restored}, siblings[idx+1:]...)...)
+				} else {
+					target.Parent.Children = append(siblings, restored)
+				}
+			}
+		} else {
+			m.Tree.Roots = append(m.Tree.Roots, restored)
+		}
+	} else {
+		m.Tree.Roots = append(m.Tree.Roots, restored)
+	}
+	m.Tree.EnsureIDs()
+	m.Tree.SetParents()
+	m.ensureValidCursor()
+	m.PendingAutoSave = true
+}
+
 func (m AppModel) Init() tea.Cmd {
 	if config.ShouldCheckForUpdate(m.Config) {
 		return checkUpdateCmd(m.Version, m.Config.GithubRepo)
@@ -443,6 +502,21 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if openEditor {
 				m.Mode = ModeNormal
 				return m, openConfigEditorCmd()
+			}
+			if closeModal {
+				m.Mode = ModeNormal
+			}
+			newModel, cmd = m, nil
+		case ModeArchive:
+			if m.ArchiveModal == nil {
+				m.ArchiveModal = NewArchiveModal(m.ArchiveStore)
+			}
+			closeModal, restoredEntry, statusMsg := m.ArchiveModal.Update(msg)
+			if statusMsg != "" {
+				m.StatusMsg = statusMsg
+			}
+			if restoredEntry != nil && restoredEntry.Item != nil {
+				m.restoreArchivedItem(restoredEntry.Item)
 			}
 			if closeModal {
 				m.Mode = ModeNormal
@@ -1138,8 +1212,55 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 		m.Tree.UnfoldAll()
 		m.ensureValidCursor()
 		return true, nil
+	case "  a a": // Archive selected item
+		if m.SelectedID != "" {
+			m.pushUndo()
+			targetItem, parentPath := m.Tree.ArchiveItem(m.SelectedID)
+			if targetItem != nil {
+				entry := &model.ArchivedEntry{
+					ID:         targetItem.ID,
+					ArchivedAt: time.Now(),
+					Context:    parentPath,
+					Item:       targetItem,
+				}
+				entries, _ := m.ArchiveStore.Load(m.Passphrase)
+				entries = append([]*model.ArchivedEntry{entry}, entries...)
+				_ = m.ArchiveStore.Save(entries, m.Passphrase)
+				_ = m.saveFile()
+				m.ensureValidCursor()
+				m.StatusMsg = fmt.Sprintf("Archived item #%s (%s)", targetItem.ID, targetItem.Text)
+			}
+			return true, nil
+		}
+	case "  a c": // Archive completed tasks
+		m.pushUndo()
+		newEntries := m.Tree.ArchiveCompleted()
+		if len(newEntries) == 0 {
+			m.StatusMsg = "No completed tasks to archive"
+			return true, nil
+		}
+		entries, _ := m.ArchiveStore.Load(m.Passphrase)
+		entries = append(newEntries, entries...)
+		_ = m.ArchiveStore.Save(entries, m.Passphrase)
+		_ = m.saveFile()
+		m.ensureValidCursor()
+		m.StatusMsg = fmt.Sprintf("Archived %d completed task(s)", len(newEntries))
+		return true, nil
+	case "  a v", "  a r": // View / restore archive
+		entries, err := m.ArchiveStore.Load(m.Passphrase)
+		if err != nil {
+			m.StatusMsg = "Failed to load archive: " + err.Error()
+			return true, nil
+		}
+		if m.ArchiveModal == nil {
+			m.ArchiveModal = NewArchiveModal(m.ArchiveStore)
+		}
+		m.ArchiveModal.Open(entries, m.Passphrase)
+		m.Mode = ModeArchive
+		return true, nil
 	case "  e e": // Toggle encryption
 		m.Storage.Encrypted = !m.Storage.Encrypted
+		m.ArchiveStore.Encrypted = m.Storage.Encrypted
 		if m.Storage.Encrypted && m.Passphrase == "" {
 			m.Mode = ModePrompt
 			m.PromptType = PromptPassphraseSet
@@ -1147,6 +1268,10 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 			m.PromptInput.Focus()
 		} else {
 			_ = m.saveFile()
+			entries, err := m.ArchiveStore.Load(m.Passphrase)
+			if err == nil {
+				_ = m.ArchiveStore.Save(entries, m.Passphrase)
+			}
 			if m.Storage.Encrypted {
 				m.StatusMsg = "Encryption ENABLED 🔒"
 			} else {
@@ -1551,6 +1676,13 @@ func (m AppModel) View() string {
 			m.ConfigModal = NewConfigModal(m.Config)
 		}
 		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.ConfigModal.Render(m.Width, m.Height))
+	}
+
+	if m.Mode == ModeArchive {
+		if m.ArchiveModal == nil {
+			m.ArchiveModal = NewArchiveModal(m.ArchiveStore)
+		}
+		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.ArchiveModal.Render(m.Width, m.Height))
 	}
 
 	// Normal View Layout: Header / Tree View (+ Dashboard) / Text Input / WhichKey / Status Bar
