@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
-	"github.com/kenth/halptask/ui"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
+	"github.com/halpworld/halptask/ui"
 )
 
 // TestMenuLayoutConsistency verifies that all UI menus (WhichKey, TagModal in all states, HelpModal, QuickHelp, StatusBar)

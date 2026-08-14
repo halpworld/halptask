@@ -15,5 +15,5 @@
 ---
 
 ### 🔗 Links
-- [GitHub Repository](https://github.com/arkalon76/halptask)
-- [Releases](https://github.com/arkalon76/halptask/releases)
+- [GitHub Repository](https://github.com/halpworld/halptask)
+- [Releases](https://github.com/halpworld/halptask/releases)

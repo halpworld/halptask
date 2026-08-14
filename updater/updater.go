@@ -112,7 +112,7 @@ func CompareVersions(v1, v2 string) int {
 // CheckForUpdate queries the GitHub Releases API for the specified repo.
 func CheckForUpdate(currentVersion, repo string) (*ReleaseInfo, error) {
 	if repo == "" {
-		repo = "arkalon76/halptask"
+		repo = "halpworld/halptask"
 	}
 
 	apiUrl := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repo)

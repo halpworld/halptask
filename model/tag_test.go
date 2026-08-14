@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 func TestItemTags(t *testing.T) {

@@ -11,30 +11,30 @@ Choose the installation method best suited for your platform:
 ### 🍺 Homebrew (macOS & Linux)
 
 ```bash
-brew install arkalon76/tap/halptask
+brew install halpworld/tap/halptask
 ```
 
 ### ⚡ Automatic Script Install (macOS & Linux)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.sh | bash
 ```
 
 ### 🪟 Windows PowerShell
 
 ```powershell
-irm https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.ps1 | iex
 ```
 
 ### 🛠️ Go Install
 
 ```bash
-go install github.com/arkalon76/halptask@latest
+go install github.com/halpworld/halptask@latest
 ```
 
 ### 📦 Standalone Binary Downloads
 
-Pre-built binaries for macOS (Intel & Apple Silicon), Linux (`x86_64` & `arm64`), and Windows are available on the [GitHub Releases Page](https://github.com/arkalon76/halptask/releases/latest).
+Pre-built binaries for macOS (Intel & Apple Silicon), Linux (`x86_64` & `arm64`), and Windows are available on the [GitHub Releases Page](https://github.com/halpworld/halptask/releases/latest).
 
 ---
 

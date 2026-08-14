@@ -7,9 +7,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
-	"github.com/kenth/halptask/updater"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
+	"github.com/halpworld/halptask/updater"
 )
 
 func TestNormalModeTaskShortcuts(t *testing.T) {

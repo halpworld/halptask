@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 func TestExtractLinks(t *testing.T) {

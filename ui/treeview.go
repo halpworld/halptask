@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
 )
 
 type TreeView struct {

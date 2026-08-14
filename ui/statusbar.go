@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 type AppMode int

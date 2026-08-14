@@ -11,9 +11,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
-	"github.com/kenth/halptask/updater"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
+	"github.com/halpworld/halptask/updater"
 )
 
 type configEditorClosedMsg struct {
@@ -615,7 +615,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.PendingAutoSave = true
 				_ = m.saveFile()
 			}
-			newModel, cmd = m, cmd
+			newModel = m
 		}
 	}
 
@@ -1522,7 +1522,7 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 			return true, doUpdateCmd(m.UpdateInfo)
 		}
 		m.StatusMsg = "Checking for updates..."
-		repo := "arkalon76/halptask"
+		repo := "halpworld/halptask"
 		if m.Config != nil && m.Config.GithubRepo != "" {
 			repo = m.Config.GithubRepo
 		}

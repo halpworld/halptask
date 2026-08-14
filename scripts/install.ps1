@@ -1,10 +1,10 @@
 # HalpTask PowerShell Installer Script for Windows
 # ⚠️ WARNING: Never trust install scripts blindly! Always inspect the source code before executing.
-# Usage: irm https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
-$Repo = "arkalon76/halptask"
+$Repo = "halpworld/halptask"
 $BinaryName = "halptask.exe"
 
 Write-Host "🚀 Installing HalpTask for Windows..." -ForegroundColor Cyan

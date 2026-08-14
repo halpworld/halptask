@@ -7,7 +7,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 func TestArchiveModalOperations(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 type NoteModalMode int

@@ -3,9 +3,9 @@ package ui_test
 import (
 	"testing"
 
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
-	"github.com/kenth/halptask/ui"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
+	"github.com/halpworld/halptask/ui"
 )
 
 func TestTagModalSelectionAndCustomTag(t *testing.T) {

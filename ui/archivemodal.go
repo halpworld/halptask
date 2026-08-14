@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 type ArchiveModal struct {

@@ -33,13 +33,13 @@
 Install the latest `halptask` binary automatically for your OS and architecture:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.sh | bash
 ```
 
 *For native Windows PowerShell:*
 
 ```powershell
-irm https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.ps1 | iex
 ```
 
 ---
@@ -104,24 +104,24 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
 Install via Homebrew tap:
 
 ```bash
-brew install arkalon76/tap/halptask
+brew install halpworld/tap/halptask
 ```
 
 ### Standalone Binary Download
 
-Download direct executable binaries for your OS and Architecture directly from [GitHub Releases](https://github.com/arkalon76/halptask/releases/latest):
+Download direct executable binaries for your OS and Architecture directly from [GitHub Releases](https://github.com/halpworld/halptask/releases/latest):
 
 ```bash
 # macOS (Apple Silicon arm64)
-curl -LO https://github.com/arkalon76/halptask/releases/latest/download/halptask_Darwin_arm64
+curl -LO https://github.com/halpworld/halptask/releases/latest/download/halptask_Darwin_arm64
 chmod +x halptask_Darwin_arm64 && sudo mv halptask_Darwin_arm64 /usr/local/bin/halptask
 
 # Linux (x86_64)
-curl -LO https://github.com/arkalon76/halptask/releases/latest/download/halptask_Linux_x86_64
+curl -LO https://github.com/halpworld/halptask/releases/latest/download/halptask_Linux_x86_64
 chmod +x halptask_Linux_x86_64 && sudo mv halptask_Linux_x86_64 /usr/local/bin/halptask
 
 # Windows (x86_64)
-curl -LO https://github.com/arkalon76/halptask/releases/latest/download/halptask_Windows_x86_64.exe
+curl -LO https://github.com/halpworld/halptask/releases/latest/download/halptask_Windows_x86_64.exe
 ```
 
 ### 🐧 Linux Packages (.deb / .rpm)
@@ -133,10 +133,10 @@ curl -LO https://github.com/arkalon76/halptask/releases/latest/download/halptask
 
 ```bash
 # Using Go
-go install github.com/arkalon76/halptask@latest
+go install github.com/halpworld/halptask@latest
 
 # Or clone and build manually
-git clone https://github.com/arkalon76/halptask.git
+git clone https://github.com/halpworld/halptask.git
 cd halptask
 go build -o halptask .
 ./halptask

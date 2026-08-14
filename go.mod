@@ -1,4 +1,4 @@
-module github.com/kenth/halptask
+module github.com/halpworld/halptask
 
 go 1.26.5
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kenth/halptask/model"
+	"github.com/halpworld/halptask/model"
 )
 
 func TestSerializeAndParseProtobuf(t *testing.T) {

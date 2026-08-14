@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	storagepb "github.com/kenth/halptask/proto/v1"
+	storagepb "github.com/halpworld/halptask/proto/v1"
 )
 
 type TaskStatus string

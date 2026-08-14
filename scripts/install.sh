@@ -3,9 +3,9 @@ set -e
 
 # HalpTask Installer Script
 # ⚠️ WARNING: Never trust install scripts blindly! Always inspect the source code before executing.
-# Usage: curl -fsSL https://raw.githubusercontent.com/arkalon76/halptask/main/scripts/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/halpworld/halptask/main/scripts/install.sh | bash
 
-REPO="arkalon76/halptask"
+REPO="halpworld/halptask"
 BINARY_NAME="halptask"
 
 echo "🚀 Installing HalpTask..."

@@ -46,10 +46,10 @@ nfpms:
   - id: default
     package_name: halptask
     vendor: HalpTask
-    homepage: https://github.com/kenth/halptask
+    homepage: https://github.com/halpworld/halptask
     maintainer: Kenth <kenth@example.com>
     description: A high-performance keyboard-driven TUI bullet point and task manager
-    license: MIT
+    license: GPL-3.0
     formats:
       - deb
       - rpm
@@ -66,12 +66,12 @@ brews:
       - default
     skip_upload: "true"
     repository:
-      owner: arkalon76
+      owner: halpworld
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
-    homepage: "https://github.com/arkalon76/halptask"
+    homepage: "https://github.com/halpworld/halptask"
     description: "A high-performance keyboard-driven TUI bullet point outliner and task manager"
-    license: "MIT"
+    license: "GPL-3.0"
     install: |
       bin.install "halptask"
 

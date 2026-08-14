@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Syncs local wiki/ folder to GitHub Wiki remote repository (https://github.com/arkalon76/halptask.wiki.git)
+# Syncs local wiki/ folder to GitHub Wiki remote repository (https://github.com/halpworld/halptask.wiki.git)
 
 set -e
 
 SOURCE_DIR="$(pwd)"
 WIKI_DIR="${SOURCE_DIR}/wiki"
 TEMP_DIR=$(mktemp -d)
-REMOTE_REPO="https://github.com/arkalon76/halptask.wiki.git"
+REMOTE_REPO="https://github.com/halpworld/halptask.wiki.git"
 
 echo "🚀 Syncing HalpTask documentation in '${WIKI_DIR}' to GitHub Wiki (${REMOTE_REPO})..."
 
@@ -47,7 +47,7 @@ else
     echo "⚠️  Failed to push to GitHub Wiki remote."
     echo "--------------------------------------------------------------------------------"
     echo "If the wiki repository is not initialized yet on GitHub:"
-    echo "  1. Open https://github.com/arkalon76/halptask/wiki in your browser"
+    echo "  1. Open https://github.com/halpworld/halptask/wiki in your browser"
     echo "  2. Click 'Create the first page' and save any page (e.g. Home)"
     echo "  3. Re-run './scripts/sync_wiki.sh'"
     echo "--------------------------------------------------------------------------------"

@@ -5,14 +5,14 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/kenth/halptask/config"
-	"github.com/kenth/halptask/model"
-	"github.com/kenth/halptask/ui"
-	"github.com/kenth/halptask/updater"
+	"github.com/halpworld/halptask/config"
+	"github.com/halpworld/halptask/model"
+	"github.com/halpworld/halptask/ui"
+	"github.com/halpworld/halptask/updater"
 	flag "github.com/spf13/pflag"
 )
 
-const Version = "0.0.7"
+const Version = "0.0.8"
 
 type CLIFlags struct {
 	FilePath    string

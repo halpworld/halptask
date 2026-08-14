@@ -69,7 +69,7 @@ func DefaultConfig() *Config {
 		AutoSave:        true,
 		CheckUpdates:    true,
 		UpdateInterval:  "daily",
-		GithubRepo:      "arkalon76/halptask",
+		GithubRepo:      "halpworld/halptask",
 		DataFile:        defaultData,
 		ArchiveFile:     defaultArchive,
 		Encrypted:       false,
@@ -135,7 +135,7 @@ func LoadConfig() (*Config, error) {
 		cfg.LeaderKey = " "
 	}
 	if cfg.GithubRepo == "" {
-		cfg.GithubRepo = "arkalon76/halptask"
+		cfg.GithubRepo = "halpworld/halptask"
 	}
 	if cfg.DefaultItemType == "" {
 		cfg.DefaultItemType = "bullet"

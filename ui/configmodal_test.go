@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/kenth/halptask/config"
+	"github.com/halpworld/halptask/config"
 )
 
 func TestConfigModalNavigationAndToggles(t *testing.T) {

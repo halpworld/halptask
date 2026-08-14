@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package halptask.v1;
 
-option go_package = "github.com/kenth/halptask/proto/v1;storagepb";
+option go_package = "github.com/halpworld/halptask/proto/v1;storagepb";
 
 enum TaskStatus {
   TASK_STATUS_UNSPECIFIED = 0;

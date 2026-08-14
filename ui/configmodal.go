@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kenth/halptask/config"
+	"github.com/halpworld/halptask/config"
 )
 
 type ConfigItemType int
