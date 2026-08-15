@@ -43,12 +43,20 @@ Pre-built binaries for macOS (Intel & Apple Silicon), Linux (`x86_64` & `arm64`)
 Run `halptask` in your terminal:
 
 ```bash
-# Launch with default file (~/.config/halptask/data.txt)
+# Launch with default file (~/.config/halptask/data.pb)
 halptask
 
 # Launch with a custom task file (short -f or long --file)
-halptask -f ~/projects/website_redesign.txt
-halptask --file ~/projects/website_redesign.txt
+halptask -f ~/projects/website_redesign.pb
+halptask --file ~/projects/website_redesign.pb
+
+# Quick-capture task directly to Inbox from terminal
+halptask add "Fix Redis timeout #ops due:tomorrow"
+halptask add "Deploy hotfix" --top
+
+# Query status or list tasks without opening TUI
+halptask list --count
+halptask list --today
 
 # Prompt for encryption setup on launch (short -e or long --encrypt)
 halptask -e

@@ -109,3 +109,10 @@ To prevent data corruption or accidental lockouts, HalpTask implements safety me
 3. **Encryption Toggles**:
    - `<space> e e`: Toggle encryption state on/off for current file.
    - `<space> e p`: Change encryption passphrase.
+4. **Headless CLI Passphrase Automation (`HALPTASK_PASSPHRASE`)**:
+   - When using headless commands (`halptask add` or `halptask list`), you can supply your vault passphrase via the `HALPTASK_PASSPHRASE` environment variable to automate background scripts, tmux statusbars, and CI/CD pipelines without interactive prompts:
+     ```bash
+     HALPTASK_PASSPHRASE="my-secret-vault-key" halptask add "Urgent security patch #sec"
+     HALPTASK_PASSPHRASE="my-secret-vault-key" halptask list --count
+     ```
+   - If `HALPTASK_PASSPHRASE` is not set and the command is executed in an interactive terminal, HalpTask prompts securely via `term.ReadPassword` on standard error.

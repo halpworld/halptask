@@ -110,25 +110,67 @@ HalpTask features a sophisticated tag hierarchy system:
 
 ---
 
-## 🖥️ 6. Terminal Shell Integration & Workflows
+## 🖥️ 6. Headless CLI Quick-Capture & Status Bar Integration
 
-### Multi-File Project Vaults
-HalpTask supports opening project-specific files directly:
+HalpTask includes a first-class headless CLI pipeline (`halptask add` and `halptask list`) that eliminates context-switching friction.
+
+### Instant 1-Second Quick-Capture
+Capture thoughts, bug reports, and action items directly from terminal sessions without opening the TUI:
 
 ```bash
-# Work-specific tasks
-halptask -f ~/work/sprint_tasks.txt
+# Capture with tags and due date
+halptask add "Fix Redis connection timeout in worker #ops due:tomorrow"
 
-# Personal goals vault
-halptask -f ~/personal/goals.txt
+# Flag modifiers
+halptask add "Draft sprint review" --tag urgent --tag meeting
+halptask add "Deploy hotfix" --top
+halptask add "System architecture note" --bullet
 ```
 
-### Useful Shell Aliases (`~/.zshrc` / `~/.bashrc`)
+### Tmux Statusline Integration (`~/.tmux.conf`)
+Display your live pending and in-progress task counts directly in your tmux status bar:
+
+```tmux
+# Update status every 60 seconds
+set -g status-interval 60
+
+# Add halptask count to right status
+set -g status-right "#(halptask list --count) | %H:%M %d-%b"
+```
+
+### Waybar Module Integration (`~/.config/waybar/config.jsonc`)
+For Wayland / Hyprland / Sway status bars:
+
+```jsonc
+"custom/halptask": {
+    "format": "{}",
+    "interval": 60,
+    "exec": "halptask list --count",
+    "on-click": "alacritty -e halptask",
+    "tooltip": false
+}
+```
+
+### Polybar Module Integration (`~/.config/polybar/config.ini`)
+For X11 / i3 / bspwm status bars:
+
+```ini
+[module/halptask]
+type = custom/script
+exec = halptask list --count
+interval = 60
+click-left = kitty -e halptask &
+format-prefix = " "
+```
+
+### Multi-File Project Vaults & Aliases
 ```bash
-# Quick aliases
+# Work-specific tasks
 alias ht="halptask"
-alias htp="halptask -f ~/projects/main.txt"
-alias htv="halptask --encrypt -f ~/.config/halptask/vault.txt"
+alias hta="halptask add"
+alias htl="halptask list --today"
+alias htp="halptask -f ~/projects/main.pb"
+alias htv="HALPTASK_PASSPHRASE=\"secret\" halptask -f ~/.config/halptask/vault.pb"
 ```
 
 ### Tmux Split Window Workflow
@@ -136,7 +178,7 @@ Keep HalpTask permanently open alongside your code editor inside Tmux:
 
 ```bash
 # In Tmux session:
-tmux split-window -h -p 35 "halptask -f .tasks.txt"
+tmux split-window -h -p 35 "halptask -f .tasks.pb"
 ```
 
 ---

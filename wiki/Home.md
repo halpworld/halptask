@@ -44,6 +44,7 @@
 - **Task Management**: Convert bullets into rich tasks with status cycling: `[ ]` Todo ➔ `[~]` In Progress ➔ `[x]` Done.
 - **Focus Mode & Top Focus Banner 🎯**: Mark any task/task group as your current focus (`fo` / `tf` / `<space> t f`). Renders vivid `🎯 FOCUS` badges, group focus indicators, and a persistent top Focus Banner with task context & attached note previews.
 - **Tag & Label System 🏷️**: Assign direct tags (`T` / `<space> t a`) with custom emojis & colors. Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`).
+- **Headless CLI Quick-Capture & Status Bar Querying ⚡**: Capture tasks in <1s directly from terminal sessions (`halptask add "Task #tag due:tomorrow"`) and query status tallies (`halptask list --count`) for tmux, Polybar, and Waybar.
 - **Compressed & Encrypted Task Archiving 📦**: Archive completed tasks (`<space> a c`) or selected subtrees (`<space> a a`) into schema-safe gzip-compressed storage (`archive.dat`) with interactive Archive Browser modal (`<space> a v`).
 - **Live Dashboard Panel (`<space> d`)**: Real-time task statistics, completion progress bar (`[████░░░░] 50%`), and active in-progress task focus view.
 - **AES-256-GCM Encryption**: Secure sensitive task vaults with strong passphrase protection and zero plaintext memory leakage.

@@ -82,6 +82,16 @@ func TestParseFlags(t *testing.T) {
 			wantFlags: CLIFlags{Encrypt: true, Version: true, FilePath: "custom.txt"},
 		},
 		{
+			name:      "long flag --help",
+			args:      []string{"--help"},
+			wantFlags: CLIFlags{Help: true},
+		},
+		{
+			name:      "short flag -h",
+			args:      []string{"-h"},
+			wantFlags: CLIFlags{Help: true},
+		},
+		{
 			name:        "unknown flag --unknown",
 			args:        []string{"--unknown"},
 			expectError: true,

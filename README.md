@@ -142,19 +142,44 @@ go build -o halptask .
 ./halptask
 ```
 
-### CLI Flags
+### CLI Flags & Headless Subcommands
 
-HalpTask follows standard Unix/POSIX (`nix`) CLI flag conventions, supporting double-dash (`--`) for long options and single-dash (`-`) for short options:
+HalpTask supports both interactive TUI launching and **Headless Subcommands** for instant task capture and status bar querying:
 
-| Short | Long | Description | Example |
+```bash
+# 1. Instant Quick-Capture to Inbox (sub-second)
+halptask add "Fix Redis connection timeout in worker #ops due:tomorrow"
+halptask add "Draft sprint review" --tag urgent --tag meeting
+halptask add "Deploy hotfix" --top
+
+# 2. Status Bar & Shell Querying
+halptask list --count        # Outputs: 📋 4 todo, 1 in-progress, 2 overdue (for tmux / Waybar)
+halptask list --today        # Outputs formatted table of tasks due today or in progress
+halptask list --json         # Outputs structured JSON for shell automation scripts
+
+# 3. Encrypted Vault Automation
+HALPTASK_PASSPHRASE="secret" halptask add "Confidential notes #vault" -f ~/.config/halptask/vault.pb
+```
+
+#### CLI Subcommand & Flag Reference:
+
+| Command / Flag | Short | Description | Example |
 |---|---|---|---|
-| `-f` | `--file` | Path to halptask data file | `halptask -f ~/tasks.txt` / `halptask --file ~/tasks.txt` |
-| `-e` | `--encrypt` | Force enable encryption | `halptask -e` / `halptask --encrypt` |
-| `-v` | `--version` | Print version info | `halptask -v` / `halptask --version` |
-| `-u` | `--update` | Check and auto-update binary | `halptask -u` / `halptask --update` |
-| `-c` | `--check-update` | Check if new version is available | `halptask -c` / `halptask --check-update` |
-| `-r` | `--repo` | Override target GitHub repository | `halptask -r owner/repo` / `halptask --repo owner/repo` |
-
+| `halptask add <text>` | `capture` | Quick-capture task into Inbox | `halptask add "Fix bug #ops due:tomorrow"` |
+| `halptask list` | `ls` | List active tasks in formatted table | `halptask list` / `halptask list --today` |
+| `--count` | `-c` | Single-line compact status summary | `halptask list --count` |
+| `--today` | `-t` | Filter tasks due today, overdue, or in-progress | `halptask list --today` |
+| `--in-progress` | `-p` | Filter tasks currently in progress | `halptask list --in-progress` |
+| `--json` | `-j` | Output structured JSON array | `halptask list --json` |
+| `--tag` | `-t` | Add tag(s) to captured task | `halptask add "Meeting" --tag sprint` |
+| `--top` | | Prepend to top of Inbox instead of bottom | `halptask add "Hotfix" --top` |
+| `--bullet` | | Create as non-task bullet point | `halptask add "Note item" --bullet` |
+| `-f` | `--file` | Path to custom halptask data file | `halptask -f ~/tasks.pb` |
+| `-e` | `--encrypt` | Force enable AES-256-GCM encryption | `halptask -e` |
+| `-v` | `--version` | Print version info | `halptask -v` |
+| `-u` | `--update` | Check and auto-update binary | `halptask -u` |
+| `-c` | `--check-update` | Check if new version is available | `halptask -c` |
+| `-r` | `--repo` | Override target GitHub repository | `halptask -r owner/repo` |
 
 ---
 

@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const Version = "0.0.9"
+const Version = "0.0.10"
 
 type TagConfig struct {
 	Name  string `yaml:"name"`
