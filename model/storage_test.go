@@ -261,4 +261,3 @@ func TestEnsureIDsDeduplication(t *testing.T) {
 		t.Fatalf("expected distinct IDs, got duplicate %q", tree.Roots[0].ID)
 	}
 }
-

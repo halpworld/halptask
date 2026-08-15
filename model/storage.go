@@ -130,7 +130,7 @@ func (s *Storage) MigrateIfNeeded(passphrase string) (bool, string, error) {
 
 	// Create backup of old file
 	bakPath := s.FilePath + ".bak"
-	if err := os.WriteFile(bakPath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(bakPath, []byte(content), 0600); err != nil {
 		return false, s.FilePath, fmt.Errorf("failed to create migration backup: %w", err)
 	}
 
@@ -230,11 +230,16 @@ func (s *Storage) Save(tree *Tree, passphrase string) error {
 	}
 
 	dir := filepath.Dir(s.FilePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
 
-	return os.WriteFile(s.FilePath, []byte(content), 0644)
+	perm := os.FileMode(0600)
+	if stat, err := os.Stat(s.FilePath); err == nil {
+		perm = stat.Mode().Perm()
+	}
+
+	return os.WriteFile(s.FilePath, []byte(content), perm)
 }
 
 func ParseMarkdown(content string) *Tree {

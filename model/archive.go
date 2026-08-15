@@ -128,11 +128,16 @@ func (s *ArchiveStore) Save(entries []*ArchivedEntry, passphrase string) error {
 	}
 
 	dir := filepath.Dir(s.FilePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
 
-	return os.WriteFile(s.FilePath, fileContent, 0644)
+	perm := os.FileMode(0600)
+	if stat, err := os.Stat(s.FilePath); err == nil {
+		perm = stat.Mode().Perm()
+	}
+
+	return os.WriteFile(s.FilePath, fileContent, perm)
 }
 
 func (s *ArchiveStore) Reencrypt(oldPassphrase, newPassphrase string) error {

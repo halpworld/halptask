@@ -340,10 +340,13 @@ func extractBinary(assetName string, data []byte) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
+			if header.FileInfo().IsDir() {
+				continue
+			}
 
 			baseName := filepath.Base(header.Name)
 			if baseName == "halptask" || baseName == "halptask.exe" {
-				return io.ReadAll(tarReader)
+				return io.ReadAll(io.LimitReader(tarReader, 250*1024*1024))
 			}
 		}
 		return nil, fmt.Errorf("binary 'halptask' not found in archive %s", assetName)
@@ -356,6 +359,9 @@ func extractBinary(assetName string, data []byte) ([]byte, error) {
 		}
 
 		for _, file := range zipReader.File {
+			if file.FileInfo().IsDir() {
+				continue
+			}
 			baseName := filepath.Base(file.Name)
 			if baseName == "halptask" || baseName == "halptask.exe" {
 				rc, err := file.Open()
@@ -363,7 +369,7 @@ func extractBinary(assetName string, data []byte) ([]byte, error) {
 					return nil, err
 				}
 				defer rc.Close()
-				return io.ReadAll(rc)
+				return io.ReadAll(io.LimitReader(rc, 250*1024*1024))
 			}
 		}
 		return nil, fmt.Errorf("binary 'halptask' not found in zip archive %s", assetName)
