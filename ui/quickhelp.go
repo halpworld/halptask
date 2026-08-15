@@ -69,6 +69,41 @@ func (qh QuickHelp) Render(width int) string {
 			{Key: "t", Label: "task"},
 			{Key: "?", Label: "help"},
 		}
+	} else if width >= 160 {
+		shortcuts = []QuickHelpItem{
+			{Key: "<space>", Label: "leader"},
+			{Key: "j/k", Label: "move"},
+			{Key: "oo/oc", Label: "new/child"},
+			{Key: "tab", Label: "indent"},
+			{Key: "enter", Label: "fold"},
+			{Key: "i", Label: "edit"},
+			{Key: "t", Label: "task"},
+			{Key: "fo", Label: "focus"},
+			{Key: "T", Label: "tags"},
+			{Key: "N", Label: "note"},
+			{Key: "u", Label: "undo"},
+			{Key: "/", Label: "search"},
+			{Key: "gi", Label: "jump"},
+			{Key: "ff", Label: "zoom"},
+			{Key: "<space> a v", Label: "archive"},
+			{Key: "?", Label: "help"},
+		}
+	} else if width >= 120 {
+		shortcuts = []QuickHelpItem{
+			{Key: "<space>", Label: "leader"},
+			{Key: "j/k", Label: "move"},
+			{Key: "oo/oc", Label: "new/child"},
+			{Key: "tab", Label: "indent"},
+			{Key: "enter", Label: "fold"},
+			{Key: "i", Label: "edit"},
+			{Key: "t", Label: "task"},
+			{Key: "fo", Label: "focus"},
+			{Key: "T", Label: "tags"},
+			{Key: "N", Label: "note"},
+			{Key: "u", Label: "undo"},
+			{Key: "/", Label: "search"},
+			{Key: "?", Label: "help"},
+		}
 	}
 
 	var parts []string

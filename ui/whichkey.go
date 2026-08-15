@@ -181,6 +181,8 @@ func (wk *WhichKeyModel) Render(allBindings []KeyBinding, width int) string {
 	cols := 3
 	if width < 70 {
 		cols = 2
+	} else if width >= 160 {
+		cols = 5
 	} else if width > 110 {
 		cols = 4
 	}

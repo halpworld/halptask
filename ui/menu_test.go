@@ -13,7 +13,7 @@ import (
 // TestMenuLayoutConsistency verifies that all UI menus (WhichKey, TagModal in all states, HelpModal, QuickHelp, StatusBar)
 // render within specified terminal width boundaries without visual line overflow or awkward linebreaks.
 func TestMenuLayoutConsistency(t *testing.T) {
-	testWidths := []int{60, 80, 100, 120}
+	testWidths := []int{60, 80, 100, 120, 160, 200, 240, 300}
 	tagConfigs := config.GetDefaultTagConfigs()
 	allBindings := ui.GetAllKeyBindings()
 
@@ -181,8 +181,95 @@ func TestPrintMenuSnapshots(t *testing.T) {
 	t.Log("\n--- WHICHKEY MENU SNAPSHOT (Width 80) ---\n" + wkRendered)
 	t.Log("\n--- TAG MODAL SNAPSHOT (Width 80) ---\n" + modalRendered)
 	t.Log("\n--- HELP MODAL SNAPSHOT (Width 80) ---\n" + helpRendered)
+	t.Log("\n--- HELP MODAL SNAPSHOT (Width 120 - DUAL COLUMN) ---\n" + help.Render(120, 24))
 
 	if wkRendered == "" || modalRendered == "" || helpRendered == "" {
 		t.Fatalf("Failed to generate menu snapshots")
+	}
+}
+
+func TestTreeViewLargeTerminalLayout(t *testing.T) {
+	widths := []int{80, 120, 160, 200, 240, 300}
+	heights := []int{15, 25, 40, 60, 80}
+
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "Short Bullet")
+	r2 := tree.InsertBelow(r1.ID, "Super long bullet with multiple tags and descriptions that exceeds typical screen widths and tests truncation #bug #urgent #feature #work")
+	tree.AddChild(r2.ID, "Child 1")
+	tree.AddChild(r2.ID, "Child 2 with extra notes")
+
+	visible := tree.FlattenVisible()
+
+	for _, w := range widths {
+		for _, h := range heights {
+			tv := ui.NewTreeView()
+			tv.Tree = tree
+			tv.Width = w
+			tv.Height = h
+
+			rendered := tv.Render(visible, 1, 0)
+			lines := strings.Split(rendered, "\n")
+
+			if len(lines) != h {
+				t.Fatalf("expected exactly %d lines rendered for height %d at width %d, got %d", h, h, w, len(lines))
+			}
+
+			for idx, line := range lines {
+				visW := lipgloss.Width(line)
+				if visW > w {
+					t.Fatalf("line %d visual width (%d) exceeds tv.Width (%d)", idx, visW, w)
+				}
+			}
+		}
+	}
+}
+
+func TestHelpModalLargeTerminalLayout(t *testing.T) {
+	largeWidths := []int{96, 120, 160, 200, 240}
+	help := ui.NewHelpModal()
+
+	for _, w := range largeWidths {
+		rendered := help.Render(w, 40)
+		lines := strings.Split(rendered, "\n")
+		for idx, line := range lines {
+			visW := lipgloss.Width(line)
+			if visW > w {
+				t.Fatalf("HelpModal line %d (width %d) exceeds terminal width %d", idx, visW, w)
+			}
+		}
+		// On wide screens (>= 96), help modal should fit under 32 lines thanks to dual column layout
+		if len(lines) > 35 {
+			t.Fatalf("HelpModal in dual column mode should be <= 35 lines, got %d lines at width %d", len(lines), w)
+		}
+	}
+}
+
+func TestDashboardTallTerminalActiveTags(t *testing.T) {
+	tree := model.NewTree()
+	r1 := tree.InsertBelow("", "Task 1")
+	r1.IsTask = true
+	r1.Status = model.StatusInProgress
+	r1.AddTag("bug")
+	r1.AddTag("urgent")
+
+	r2 := tree.InsertBelow(r1.ID, "Task 2")
+	r2.IsTask = true
+	r2.Status = model.StatusInProgress
+	r2.AddTag("feature")
+	r2.AddTag("urgent")
+
+	r3 := tree.InsertBelow(r2.ID, "Task 3")
+	r3.AddTag("idea")
+
+	dbView := ui.NewDashboardView()
+	dbView.Width = 35
+	dbView.Height = 30 // tall terminal
+	rendered := dbView.Render(tree, config.GetDefaultTagConfigs())
+
+	if !strings.Contains(rendered, "ACTIVE TAGS") {
+		t.Fatalf("expected tall terminal DashboardView to display ACTIVE TAGS section, got:\n%s", rendered)
+	}
+	if !strings.Contains(rendered, "#urgent") {
+		t.Fatalf("expected ACTIVE TAGS to contain '#urgent'")
 	}
 }

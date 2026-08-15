@@ -140,10 +140,10 @@ func (sb *StatusBar) Render(mode AppMode, filePath string, isEncrypted bool, sta
 		Padding(0, 1)
 
 	modeSection := modeStyle.Render(mode.String())
-	fileSection := fileStyle.Render(filepath.Base(filePath))
+	fileName := filepath.Base(filePath)
+	fileSection := fileStyle.Render(fileName)
 
-	leftSide := lipgloss.JoinHorizontal(lipgloss.Center, modeSection, fileSection, encStr)
-
+	leftFixed := lipgloss.JoinHorizontal(lipgloss.Center, modeSection, fileSection, encStr)
 	if updateBadge != "" {
 		badgeSection := lipgloss.NewStyle().
 			Background(lipgloss.Color("#bb9af7")).
@@ -151,22 +151,34 @@ func (sb *StatusBar) Render(mode AppMode, filePath string, isEncrypted bool, sta
 			Bold(true).
 			Padding(0, 1).
 			Render(updateBadge)
-		leftSide = lipgloss.JoinHorizontal(lipgloss.Center, leftSide, badgeSection)
+		leftFixed = lipgloss.JoinHorizontal(lipgloss.Center, leftFixed, badgeSection)
 	}
 
 	rightSide := lipgloss.JoinHorizontal(lipgloss.Center, statsBlock, posBlock)
+	rightWidth := lipgloss.Width(rightSide)
+	leftWidth := lipgloss.Width(leftFixed)
 
-	if statusMsg != "" && width >= 75 {
-		msgSection := msgStyle.Render(statusMsg)
-		leftSide = lipgloss.JoinHorizontal(lipgloss.Center, leftSide, msgSection)
+	leftSide := leftFixed
+
+	if statusMsg != "" && width >= 65 {
+		availMsgWidth := width - leftWidth - rightWidth - 2
+		if availMsgWidth >= 8 {
+			msgText := statusMsg
+			if lipgloss.Width(msgText) > availMsgWidth {
+				runes := []rune(msgText)
+				if len(runes) > availMsgWidth-3 && availMsgWidth > 3 {
+					msgText = string(runes[:availMsgWidth-3]) + "..."
+				}
+			}
+			msgSection := msgStyle.Render(msgText)
+			leftSide = lipgloss.JoinHorizontal(lipgloss.Center, leftFixed, msgSection)
+			leftWidth = lipgloss.Width(leftSide)
+		}
 	}
 
-	leftWidth := lipgloss.Width(leftSide)
-	rightWidth := lipgloss.Width(rightSide)
 	midSpaces := width - leftWidth - rightWidth
-
 	if midSpaces < 0 {
-		// On narrow terminals, omit statusMsg and truncate file section if needed
+		// If still too tight on narrow screens, use compact left side
 		leftSide = lipgloss.JoinHorizontal(lipgloss.Center, modeSection, encStr)
 		leftWidth = lipgloss.Width(leftSide)
 		midSpaces = width - leftWidth - rightWidth

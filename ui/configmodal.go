@@ -342,8 +342,9 @@ func (cm *ConfigModal) Render(width, height int) string {
 			maxValLen = 15
 		}
 		if lipgloss.Width(valStr) > maxValLen {
-			if len(valStr) > maxValLen {
-				valStr = "..." + valStr[len(valStr)-maxValLen+3:]
+			vRunes := []rune(valStr)
+			if len(vRunes) > maxValLen && maxValLen > 3 {
+				valStr = "..." + string(vRunes[len(vRunes)-maxValLen+3:])
 			}
 		}
 

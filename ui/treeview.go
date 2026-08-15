@@ -237,23 +237,34 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 
 		lineContent := fmt.Sprintf("%s%s%s%s%s%s", cursorStr, indentStr, prefix, idStr, statusBox, formattedText)
 
-		if isSelected {
+		if tv.Width > 0 {
+			visW := lipgloss.Width(lineContent)
+			if visW > tv.Width {
+				rendered := lipgloss.NewStyle().MaxWidth(tv.Width).Render(lineContent)
+				if idx := strings.IndexByte(rendered, '\n'); idx != -1 {
+					rendered = rendered[:idx]
+				}
+				lineContent = rendered
+				visW = lipgloss.Width(lineContent)
+			}
+
+			if isSelected {
+				padding := ""
+				if visW < tv.Width {
+					padding = strings.Repeat(" ", tv.Width-visW)
+				}
+				lineContent = selectedRowStyle.Render(lineContent + padding)
+			} else if visW < tv.Width {
+				lineContent = lineContent + strings.Repeat(" ", tv.Width-visW)
+			}
+		} else if isSelected {
 			lineContent = selectedRowStyle.Render(lineContent)
 		}
 
 		lines = append(lines, lineContent)
 	}
 
-	// Pad all lines to tv.Width and fill up to maxLines when tv.Width > 0
 	if tv.Width > 0 {
-		for i, line := range lines {
-			w := lipgloss.Width(line)
-			if w < tv.Width {
-				lines[i] = line + strings.Repeat(" ", tv.Width-w)
-			} else if w > tv.Width {
-				lines[i] = lipgloss.NewStyle().MaxWidth(tv.Width).Render(line)
-			}
-		}
 		for len(lines) < maxLines {
 			lines = append(lines, strings.Repeat(" ", tv.Width))
 		}

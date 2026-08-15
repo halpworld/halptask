@@ -63,12 +63,18 @@ func (nm *NoteModal) SetSize(width, height int) {
 	nm.Height = height
 
 	modalWidth := width - 10
-	if modalWidth < 30 {
-		modalWidth = 30
+	if modalWidth > 116 {
+		modalWidth = 116
+	}
+	if modalWidth < 35 {
+		modalWidth = 35
 	}
 	modalHeight := height - 6
-	if modalHeight < 10 {
-		modalHeight = 10
+	if modalHeight > 42 {
+		modalHeight = 42
+	}
+	if modalHeight < 12 {
+		modalHeight = 12
 	}
 
 	contentWidth := modalWidth - 4
@@ -508,10 +514,16 @@ func (nm *NoteModal) Update(msg tea.Msg) (*NoteModal, tea.Cmd, string) {
 
 func (nm *NoteModal) View() string {
 	modalWidth := nm.Width - 10
+	if modalWidth > 116 {
+		modalWidth = 116
+	}
 	if modalWidth < 35 {
 		modalWidth = 35
 	}
 	modalHeight := nm.Height - 6
+	if modalHeight > 42 {
+		modalHeight = 42
+	}
 	if modalHeight < 12 {
 		modalHeight = 12
 	}
@@ -522,7 +534,16 @@ func (nm *NoteModal) View() string {
 		if nm.Item.IsTask {
 			itemType = "Task"
 		}
-		titleText = fmt.Sprintf("📝 Note: %s #%s - %s", itemType, nm.Item.ID, nm.Item.Text)
+		itemText := nm.Item.Text
+		maxItemTextLen := modalWidth - 30
+		if maxItemTextLen < 15 {
+			maxItemTextLen = 15
+		}
+		runes := []rune(itemText)
+		if len(runes) > maxItemTextLen && maxItemTextLen > 3 {
+			itemText = string(runes[:maxItemTextLen-3]) + "..."
+		}
+		titleText = fmt.Sprintf("📝 Note: %s #%s - %s", itemType, nm.Item.ID, itemText)
 	}
 
 	modeBadge := "[VIEW MODE]"

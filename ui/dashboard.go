@@ -171,10 +171,74 @@ func (db *DashboardView) Render(tree *model.Tree, tagConfigs []config.TagConfig)
 		}
 	}
 
-	// Constrain line count to boxHeight - 2 inside border
+	// 3. Active Tags Section (if vertical space is available in large terminals)
 	maxContentLines := boxHeight - 2
 	if maxContentLines < 1 {
 		maxContentLines = 1
+	}
+
+	if tree != nil && len(lines)+4 <= maxContentLines {
+		tagCounts := make(map[string]int)
+		var collectTags func(items []*model.Item)
+		collectTags = func(items []*model.Item) {
+			for _, it := range items {
+				all := tree.GetAllTags(it)
+				for _, t := range all {
+					tagCounts[strings.ToLower(t)]++
+				}
+				if len(it.Children) > 0 {
+					collectTags(it.Children)
+				}
+			}
+		}
+		collectTags(tree.Roots)
+
+		if len(tagCounts) > 0 {
+			lines = append(lines, "")
+			lines = append(lines, sectionHeaderStyle.Render(fmt.Sprintf("🏷️  ACTIVE TAGS (%d)", len(tagCounts))))
+
+			tagConfigMap := make(map[string]config.TagConfig)
+			for _, tc := range db.TagConfigs {
+				tagConfigMap[strings.ToLower(tc.Name)] = tc
+			}
+
+			type tagCountItem struct {
+				name  string
+				count int
+			}
+			var sortedTags []tagCountItem
+			for name, count := range tagCounts {
+				sortedTags = append(sortedTags, tagCountItem{name: name, count: count})
+			}
+			for i := 0; i < len(sortedTags)-1; i++ {
+				for j := i + 1; j < len(sortedTags); j++ {
+					if sortedTags[i].count < sortedTags[j].count || (sortedTags[i].count == sortedTags[j].count && sortedTags[i].name > sortedTags[j].name) {
+						sortedTags[i], sortedTags[j] = sortedTags[j], sortedTags[i]
+					}
+				}
+			}
+
+			for _, tci := range sortedTags {
+				if len(lines) >= maxContentLines {
+					break
+				}
+				tc, ok := tagConfigMap[tci.name]
+				emoji := "🏷️"
+				colorHex := "#7aa2f7"
+				if ok {
+					if tc.Emoji != "" {
+						emoji = tc.Emoji
+					}
+					if tc.Color != "" {
+						colorHex = tc.Color
+					}
+				}
+				tagStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(colorHex)).Bold(true)
+				cntStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89"))
+				tagRow := fmt.Sprintf("%s %s %s", emoji, tagStyle.Render("#"+tci.name), cntStyle.Render(fmt.Sprintf("(%d)", tci.count)))
+				lines = append(lines, truncateOrPad(tagRow, contentWidth))
+			}
+		}
 	}
 
 	if len(lines) > maxContentLines {
