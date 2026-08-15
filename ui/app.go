@@ -85,16 +85,16 @@ type AppModel struct {
 	PromptInput textinput.Model
 	PromptType  PromptType
 
-	WhichKey    WhichKeyModel
-	QuickHelp   QuickHelp
-	TreeView    TreeView
-	StatusBar   StatusBar
-	HelpModal   HelpModal
-	TagModal    *TagModal
-	ConfigModal *ConfigModal
+	WhichKey     WhichKeyModel
+	QuickHelp    QuickHelp
+	TreeView     TreeView
+	StatusBar    StatusBar
+	HelpModal    HelpModal
+	TagModal     *TagModal
+	ConfigModal  *ConfigModal
 	ArchiveStore *model.ArchiveStore
 	ArchiveModal *ArchiveModal
-	NoteModal   *NoteModal
+	NoteModal    *NoteModal
 
 	Passphrase string
 	StatusMsg  string
@@ -187,7 +187,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		NoteModal:       NewNoteModal(80, 24),
 		Width:           80,
 		Height:          24,
-		Version:         "0.0.7",
+		Version:         config.Version,
 		UpdateAvailable: false,
 		IsUpdating:      false,
 	}

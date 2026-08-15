@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const Version = "0.0.9"
+
 type TagConfig struct {
 	Name  string `yaml:"name"`
 	Emoji string `yaml:"emoji"`

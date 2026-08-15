@@ -608,44 +608,44 @@ func TestExistingItemEscapeNotDeleted(t *testing.T) {
 
 func TestTitleBarVersionAndSpace(t *testing.T) {
 	app := AppModel{
-		Version: "0.0.7",
+		Version: config.Version,
 		Width:   80,
 	}
 
-	// 1. Standard width without update -> title bar includes current version v0.0.7
+	// 1. Standard width without update -> title bar includes current version
 	renderedBar := app.renderTitleBar()
-	if !strings.Contains(renderedBar, "v0.0.7") {
-		t.Fatalf("expected title bar to contain current version 'v0.0.7', got %q", renderedBar)
+	if !strings.Contains(renderedBar, "v"+config.Version) {
+		t.Fatalf("expected title bar to contain current version 'v%s', got %q", config.Version, renderedBar)
 	}
 
 	// 2. Wide terminal width (80) with update available -> includes current version AND update version
 	app.UpdateAvailable = true
-	app.UpdateInfo = &updater.ReleaseInfo{Version: "0.0.8"}
+	app.UpdateInfo = &updater.ReleaseInfo{Version: "0.1.0"}
 
 	renderedBarWithUpdate := app.renderTitleBar()
-	if !strings.Contains(renderedBarWithUpdate, "v0.0.7") {
-		t.Fatalf("expected title bar to contain current version 'v0.0.7', got %q", renderedBarWithUpdate)
+	if !strings.Contains(renderedBarWithUpdate, "v"+config.Version) {
+		t.Fatalf("expected title bar to contain current version 'v%s', got %q", config.Version, renderedBarWithUpdate)
 	}
-	if !strings.Contains(renderedBarWithUpdate, "v0.0.8") {
-		t.Fatalf("expected title bar to contain update version 'v0.0.8' when space is available, got %q", renderedBarWithUpdate)
+	if !strings.Contains(renderedBarWithUpdate, "v0.1.0") {
+		t.Fatalf("expected title bar to contain update version 'v0.1.0' when space is available, got %q", renderedBarWithUpdate)
 	}
 
 	// 3. Narrow terminal width (48) with update available -> space is limited, so update version is omitted to fit available space
 	app.Width = 48
 	renderedNarrow := app.renderTitleBar()
-	if !strings.Contains(renderedNarrow, "v0.0.7") {
-		t.Fatalf("expected title bar to retain current version 'v0.0.7' under narrow width, got %q", renderedNarrow)
+	if !strings.Contains(renderedNarrow, "v"+config.Version) {
+		t.Fatalf("expected title bar to retain current version 'v%s' under narrow width, got %q", config.Version, renderedNarrow)
 	}
-	if strings.Contains(renderedNarrow, "v0.0.8") {
-		t.Fatalf("expected title bar to omit update version 'v0.0.8' when space is insufficient, got %q", renderedNarrow)
+	if strings.Contains(renderedNarrow, "v0.1.0") {
+		t.Fatalf("expected title bar to omit update version 'v0.1.0' when space is insufficient, got %q", renderedNarrow)
 	}
 }
 func TestJumpToID(t *testing.T) {
 	cfg := config.DefaultConfig()
 	tree := model.NewTree()
-	r1 := tree.InsertBelow("", "First Root") // ID: 1
-	r2 := tree.InsertBelow(r1.ID, "Second Root") // ID: 2
-	c1 := tree.AddChild(r2.ID, "Child Item") // ID: 3
+	r1 := tree.InsertBelow("", "First Root")         // ID: 1
+	r2 := tree.InsertBelow(r1.ID, "Second Root")     // ID: 2
+	c1 := tree.AddChild(r2.ID, "Child Item")         // ID: 3
 	c2 := tree.AddChild(r2.ID, "Target Nested Item") // ID: 4
 	_ = c1
 
@@ -655,15 +655,15 @@ func TestJumpToID(t *testing.T) {
 	ji.Prompt = "🔢 Jump to ID: #"
 
 	app := AppModel{
-		Config:      cfg,
-		Tree:        tree,
-		Mode:        ModeNormal,
-		JumpInput:   ji,
-		WhichKey:    NewWhichKeyModel(),
-		QuickHelp:   NewQuickHelp(),
-		TreeView:    NewTreeView(),
-		StatusBar:   NewStatusBar(),
-		HelpModal:   NewHelpModal(),
+		Config:    cfg,
+		Tree:      tree,
+		Mode:      ModeNormal,
+		JumpInput: ji,
+		WhichKey:  NewWhichKeyModel(),
+		QuickHelp: NewQuickHelp(),
+		TreeView:  NewTreeView(),
+		StatusBar: NewStatusBar(),
+		HelpModal: NewHelpModal(),
 	}
 	app.ensureValidCursor()
 
@@ -1014,5 +1014,3 @@ func TestExitFocusModeWithEscapeAndQ(t *testing.T) {
 		t.Fatalf("expected StatusMsg 'Cleared current focus task', got %q", app.StatusMsg)
 	}
 }
-
-

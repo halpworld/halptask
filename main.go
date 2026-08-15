@@ -12,7 +12,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-const Version = "0.0.8"
+const Version = config.Version
 
 type CLIFlags struct {
 	FilePath    string

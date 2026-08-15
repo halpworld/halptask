@@ -900,4 +900,3 @@ func (t *Tree) ArchiveCompleted() []*ArchivedEntry {
 	t.SetParents()
 	return entries
 }
-

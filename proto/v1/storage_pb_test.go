@@ -24,8 +24,8 @@ func TestReadBytesIntegerOverflow(t *testing.T) {
 func TestUnmarshalCorruptedTreeProto(t *testing.T) {
 	corruptedPayloads := [][]byte{
 		{0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, // Malformed varint
-		{0x12, 0xFF, 0xFF, 0xFF, 0xFF, 0x01},                       // Length delimited out of bounds
-		{0x1A, 0x10},                                                // Truncated length
+		{0x12, 0xFF, 0xFF, 0xFF, 0xFF, 0x01},                         // Length delimited out of bounds
+		{0x1A, 0x10},                                                 // Truncated length
 	}
 
 	for i, payload := range corruptedPayloads {
