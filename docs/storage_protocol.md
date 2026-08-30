@@ -45,6 +45,9 @@ message ItemProto {
   bool deleted = 11;          // Tombstone deletion flag
   uint64 version = 12;        // Item mutation sequence number
   string note = 13;           // Attached Markdown note text
+  bool is_focused = 14;       // Focus mode indicator
+  int64 due_date = 15;        // Unix timestamp (seconds) representing deadline (0 if unset)
+  string due_text = 16;       // Original natural language due string (e.g. "tomorrow", "+3d")
 }
 
 message TreeProto {

@@ -50,7 +50,19 @@ When you need direct, non-cycling status assignment:
 - `<space> t s`: Mark **Todo** (`[ ]`) instantly.
 - `<space> t a`: Open **Tag Manager** (`🏷️`).
 - `<space> n` / `N`: Open / Edit **Task Markdown Note** (`📝`).
-- `<space> t D`: Toggle **Default Creation Type** (`bullet` <-> `task`).
+- `<space> t D` / `D`: Open **Set / Edit Due Date** prompt (`⏰`).
+- `<space> a g` / `A`: Open **Agenda & Schedule View** modal (`📅`).
+
+### ⏰ Due Dates, Natural Scheduling & Agenda View (`D` / `<space> a g` / `A`)
+HalpTask transforms nested task outliners into actionable daily agendas:
+- **Inline Scheduling**: While typing in insert mode, type `due:tomorrow`, `due:+3d`, `due:friday`, `due:2026-08-25`, or `@due(...)` to automatically attach a deadline.
+- **Urgency Badges**: Tasks render ANSI-styled badges:
+  - 🔴 `[Overdue: 2d]` (Bold Red alert for overdue incomplete tasks)
+  - 🟡 `[Due Today]` (Amber warning for tasks due today)
+  - 🔵 `[Due: Tomorrow]` / `[Due: Fri]` (Cyan subtle info)
+  - 🏁 `[Due: Aug 25]` (Muted completed)
+- **Agenda View Modal (`A` or `<space> a g`)**: Displays a full-screen schedule grouped into **Overdue**, **Today**, **This Week**, **Upcoming**, and **Completed**.
+  - Press `j`/`k` to navigate, `t`/`x`/`Space` to cycle status, `D` to change due dates, `/` to filter, and `Enter` to jump directly to that task in your tree outliner!
 
 ### 📝 Task Notes & Cross-Task Linking (`N` or `<space> n`)
 Attach detailed Markdown context to any task item.

@@ -43,7 +43,7 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> t a` | `🏷️` | Manage tags | Opens interactive Tag / Label Manager modal |
 | `<space> n` / `<space> t n` | `📝` | Task Notes | Opens interactive Task Markdown Note modal |
 | `<space> t h` | `👁️` | Filter completed | Toggles hiding/showing completed `[x]` tasks |
-| `<space> t D` | `⚙️` | Toggle default | Switches default creation mode (`bullet` <-> `task`) |
+| `<space> t D` / `D` | `⏰` | Set Due Date | Opens prompt to set, edit, or clear task due date |
 
 ### 3. Focus Menu (`<space> f ...`)
 
@@ -66,15 +66,14 @@ Pressing `<space>` triggers the interactive **WhichKey popup window**.
 | `<space> z z` | Zoom / Hoist | Hoists focused subtree or returns to full view |
 | `<space> z M` | Close all folds | Folds every nested node across entire document |
 | `<space> z R` | Open all folds | Unfolds every node across entire document |
-| `<space> z M` | Close all folds | Folds every nested node across entire document |
-| `<space> z R` | Open all folds | Unfolds every node across entire document |
 
 ---
 
-### 4. Archive Operations (`<space> a ...`)
+### 5. Agenda & Archive Operations (`<space> a ...`)
 
 | Shortcut | Action | Category | Description |
 |---|---|---|---|
+| `<space> a g` / `A` | Agenda View | Agenda | Opens interactive Agenda & Schedule modal grouped by Overdue, Today, Week |
 | `<space> a a` | Archive selected item | Archive | Archives the selected bullet/task and its entire subtree |
 | `<space> a c` | Archive completed tasks | Archive | Archives all completed `[x]` tasks across the entire tree |
 | `<space> a v` / `<space> a r` | View / restore archive | Archive | Opens interactive Archive View modal to search, restore, or delete archived items |
@@ -127,6 +126,7 @@ Single and double-character Vim motions available directly in Normal Mode:
 | `G` | Jump bottom | Jumps cursor to bottom of document |
 | `gi` | Jump to ID | Opens prompt to jump directly to any task/bullet by permanent ID |
 | `ff` | Zoom / Hoist | Hoists focused subtree or returns to full view |
+| `A` | Agenda View | Opens interactive Agenda & Schedule modal |
 
 ### Editing & Structure
 | Key | Action | Description |
@@ -142,6 +142,7 @@ Single and double-character Vim motions available directly in Normal Mode:
 | `J` | Move down | Swaps position with next sibling |
 | `K` | Move up | Swaps position with previous sibling |
 | `t` | Cycle task | 1-Key task conversion & status cycle (`•` ➔ `[ ]` ➔ `[~]` ➔ `[x]`) |
+| `D` | Set Due Date | Opens prompt to set, edit, or clear task due date |
 | `fo` / `tf` | Toggle Focus | Toggles current focus task status and shows Focus Banner |
 | `T` | Manage tags | Opens Tag & Label Manager modal |
 | `fc` | Filter completed | Toggles hiding/showing completed `[x]` tasks |

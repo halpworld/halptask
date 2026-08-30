@@ -79,11 +79,12 @@ type AppModel struct {
 	ScrollOffset int
 	SelectedID   string
 
-	TextInput   textinput.Model
-	SearchInput textinput.Model
-	JumpInput   textinput.Model
-	PromptInput textinput.Model
-	PromptType  PromptType
+	TextInput    textinput.Model
+	SearchInput  textinput.Model
+	JumpInput    textinput.Model
+	PromptInput  textinput.Model
+	DueDateInput textinput.Model
+	PromptType   PromptType
 
 	WhichKey     WhichKeyModel
 	QuickHelp    QuickHelp
@@ -95,6 +96,7 @@ type AppModel struct {
 	ArchiveStore *model.ArchiveStore
 	ArchiveModal *ArchiveModal
 	NoteModal    *NoteModal
+	AgendaModal  *AgendaModal
 
 	Passphrase string
 	StatusMsg  string
@@ -148,6 +150,11 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 	pi.EchoMode = textinput.EchoPassword
 	pi.EchoCharacter = '•'
 
+	ddi := textinput.New()
+	ddi.Prompt = "⏰ Set Due Date: "
+	ddi.Placeholder = "today, tomorrow, +3d, mon, 2026-08-25 (or empty to clear)..."
+	ddi.CharLimit = 64
+
 	showIDs := true
 	if cfg != nil {
 		showIDs = cfg.ShowItemIDs
@@ -167,6 +174,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		Storage:         storage,
 		ArchiveStore:    archiveStore,
 		ArchiveModal:    NewArchiveModal(archiveStore),
+		AgendaModal:     NewAgendaModal(),
 		Tree:            model.NewTree(),
 		UndoStack:       []*model.Tree{},
 		RedoStack:       []*model.Tree{},
@@ -177,6 +185,7 @@ func InitialModel(cfg *config.Config, storage *model.Storage) (AppModel, tea.Cmd
 		SearchInput:     si,
 		JumpInput:       ji,
 		PromptInput:     pi,
+		DueDateInput:    ddi,
 		WhichKey:        NewWhichKeyModel(),
 		QuickHelp:       NewQuickHelp(),
 		TreeView:        tv,
@@ -616,6 +625,10 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				_ = m.saveFile()
 			}
 			newModel = m
+		case ModeAgenda:
+			newModel, cmd = m.updateAgenda(msg)
+		case ModeDueDatePrompt:
+			newModel, cmd = m.updateDueDatePrompt(msg)
 		}
 	}
 
@@ -1074,6 +1087,29 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 		m.KeyBuffer = ""
+	case "D":
+		if m.SelectedID != "" {
+			item := m.Tree.FindItem(m.SelectedID)
+			if item != nil {
+				m.Mode = ModeDueDatePrompt
+				m.DueDateInput.SetValue(item.DueText)
+				if item.DueText == "" && item.DueDate > 0 {
+					m.DueDateInput.SetValue(time.Unix(item.DueDate, 0).Format("2006-01-02"))
+				}
+				m.DueDateInput.Focus()
+				m.KeyBuffer = ""
+				return m, textinput.Blink
+			}
+		}
+		m.KeyBuffer = ""
+	case "A":
+		if m.AgendaModal == nil {
+			m.AgendaModal = NewAgendaModal()
+		}
+		m.AgendaModal.Open(m.Tree)
+		m.Mode = ModeAgenda
+		m.KeyBuffer = ""
+		return m, nil
 	case "N":
 		if m.SelectedID != "" {
 			item := m.Tree.FindItem(m.SelectedID)
@@ -1333,7 +1369,21 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 				return true, nil
 			}
 		}
-	case "  t D", "  b D", "  t m", "  b m": // Toggle default creation item type
+	case "  t D", "  s d": // Set / edit due date prompt
+		if m.SelectedID != "" {
+			item := m.Tree.FindItem(m.SelectedID)
+			if item != nil {
+				m.Mode = ModeDueDatePrompt
+				m.DueDateInput.SetValue(item.DueText)
+				if item.DueText == "" && item.DueDate > 0 {
+					m.DueDateInput.SetValue(time.Unix(item.DueDate, 0).Format("2006-01-02"))
+				}
+				m.DueDateInput.Focus()
+				return true, textinput.Blink
+			}
+		}
+		return true, nil
+	case "  b D", "  t m", "  b m": // Toggle default creation item type
 		m.toggleDefaultItemType()
 		return true, nil
 	case "  c c": // Open Config Dashboard
@@ -1464,6 +1514,13 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 		m.ArchiveModal.Open(entries, m.Passphrase)
 		m.Mode = ModeArchive
 		return true, nil
+	case "  a g": // View agenda / schedule
+		if m.AgendaModal == nil {
+			m.AgendaModal = NewAgendaModal()
+		}
+		m.AgendaModal.Open(m.Tree)
+		m.Mode = ModeAgenda
+		return true, nil
 	case "  e e": // Toggle encryption
 		m.Storage.Encrypted = !m.Storage.Encrypted
 		m.ArchiveStore.Encrypted = m.Storage.Encrypted
@@ -1543,9 +1600,17 @@ func (m AppModel) updateInsert(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		text := model.SanitizeTerminalEscapeArtifacts(strings.TrimSpace(m.TextInput.Value()))
 		if m.SelectedID != "" {
 			item := m.Tree.FindItem(m.SelectedID)
-			if item != nil && item.Text != text {
-				item.Text = text
-				m.PendingAutoSave = true
+			if item != nil {
+				cleanText, dueDate, rawDue, hasDue := model.ExtractDueToken(text, time.Now())
+				if hasDue && dueDate != nil {
+					item.DueDate = dueDate.Unix()
+					item.DueText = rawDue
+					text = cleanText
+				}
+				if item.Text != text {
+					item.Text = text
+					m.PendingAutoSave = true
+				}
 			}
 		}
 		m.EditingNewItem = false
@@ -1763,6 +1828,138 @@ func (m AppModel) updatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	m.PromptInput, cmd = m.PromptInput.Update(msg)
 	return m, cmd
+}
+
+func (m AppModel) updateDueDatePrompt(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch msg.String() {
+	case "enter":
+		input := strings.TrimSpace(m.DueDateInput.Value())
+		if m.SelectedID != "" {
+			item := m.Tree.FindItem(m.SelectedID)
+			if item != nil {
+				m.pushUndo()
+				if input == "" {
+					item.ClearDueDate()
+					m.StatusMsg = "Cleared due date"
+				} else {
+					parsed, raw, err := model.ParseDueString(input, time.Now())
+					if err != nil {
+						m.StatusMsg = fmt.Sprintf("Invalid date format: %q", input)
+					} else {
+						item.SetDueDate(parsed, raw)
+						m.StatusMsg = fmt.Sprintf("Set due date: %s", parsed.Format("2006-01-02"))
+					}
+				}
+				m.PendingAutoSave = true
+				_ = m.saveFile()
+			}
+		}
+		m.Mode = ModeNormal
+		m.DueDateInput.Blur()
+		return m, nil
+	case "esc":
+		m.Mode = ModeNormal
+		m.DueDateInput.Blur()
+		return m, nil
+	}
+
+	m.DueDateInput, cmd = m.DueDateInput.Update(msg)
+	return m, cmd
+}
+
+func (m AppModel) updateAgenda(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if m.AgendaModal == nil {
+		m.AgendaModal = NewAgendaModal()
+	}
+
+	if m.AgendaModal.SearchInput.Focused() {
+		switch msg.String() {
+		case "esc", "enter":
+			m.AgendaModal.SearchInput.Blur()
+			return m, nil
+		default:
+			var cmd tea.Cmd
+			m.AgendaModal.SearchInput, cmd = m.AgendaModal.SearchInput.Update(msg)
+			m.AgendaModal.ApplyFilter()
+			return m, cmd
+		}
+	}
+
+	switch msg.String() {
+	case "esc", "q":
+		m.Mode = ModeNormal
+		return m, nil
+	case "j", "down":
+		m.AgendaModal.Next()
+		return m, nil
+	case "k", "up":
+		m.AgendaModal.Prev()
+		return m, nil
+	case "/":
+		m.AgendaModal.SearchInput.Focus()
+		return m, textinput.Blink
+	case "t", "x", " ":
+		selected := m.AgendaModal.SelectedItem()
+		if selected != nil {
+			m.pushUndo()
+			m.Tree.CycleStatus(selected.ID)
+			m.PendingAutoSave = true
+			_ = m.saveFile()
+			m.AgendaModal.RebuildEntries()
+		}
+		return m, nil
+	case "D", "d":
+		selected := m.AgendaModal.SelectedItem()
+		if selected != nil {
+			m.SelectedID = selected.ID
+			m.Mode = ModeDueDatePrompt
+			m.DueDateInput.SetValue(selected.DueText)
+			if selected.DueText == "" && selected.DueDate > 0 {
+				m.DueDateInput.SetValue(time.Unix(selected.DueDate, 0).Format("2006-01-02"))
+			}
+			m.DueDateInput.Focus()
+			return m, textinput.Blink
+		}
+		return m, nil
+	case "enter":
+		selected := m.AgendaModal.SelectedItem()
+		if selected != nil {
+			targetID := selected.ID
+			m.Mode = ModeNormal
+			m.SelectedID = targetID
+			visible := m.getVisibleItems()
+			found := false
+			for i, v := range visible {
+				if v.Item.ID == targetID {
+					m.CursorIndex = i
+					found = true
+					break
+				}
+			}
+			if !found {
+				curr := selected.Parent
+				for curr != nil {
+					curr.Folded = false
+					curr = curr.Parent
+				}
+				visible = m.getVisibleItems()
+				for i, v := range visible {
+					if v.Item.ID == targetID {
+						m.CursorIndex = i
+						break
+					}
+				}
+			}
+			m.ensureValidCursor()
+			m.StatusMsg = fmt.Sprintf("Jumped to: %s", selected.Text)
+			return m, nil
+		}
+		m.Mode = ModeNormal
+		return m, nil
+	}
+
+	return m, nil
 }
 
 func (m *AppModel) autoSave() {
@@ -2029,6 +2226,15 @@ func (m AppModel) View() string {
 		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.NoteModal.View())
 	}
 
+	if m.Mode == ModeAgenda {
+		if m.AgendaModal == nil {
+			m.AgendaModal = NewAgendaModal()
+		}
+		m.AgendaModal.Width = m.Width
+		m.AgendaModal.Height = m.Height
+		return lipgloss.Place(m.Width, m.Height, lipgloss.Center, lipgloss.Center, m.AgendaModal.Render())
+	}
+
 	// Normal View Layout: Header / Tree View (+ Dashboard) / Text Input / WhichKey / Status Bar
 	header := m.renderTitleBar()
 	focusBannerStr := m.renderFocusBanner()
@@ -2045,7 +2251,7 @@ func (m AppModel) View() string {
 	if focusBannerStr != "" {
 		reservedHeight += strings.Count(focusBannerStr, "\n") + 1
 	}
-	if m.Mode == ModeInsert || m.Mode == ModeSearch {
+	if m.Mode == ModeInsert || m.Mode == ModeSearch || m.Mode == ModeDueDatePrompt || m.Mode == ModeJumpToID {
 		reservedHeight += 3
 	}
 	if m.WhichKey.Active {
@@ -2131,6 +2337,14 @@ func (m AppModel) View() string {
 			Width(m.Width - 4).
 			Render(m.JumpInput.View())
 		midSection = jumpBox
+	} else if m.Mode == ModeDueDatePrompt {
+		dueBox := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#e0af68")).
+			Padding(0, 1).
+			Width(m.Width - 4).
+			Render(m.DueDateInput.View())
+		midSection = dueBox
 	}
 
 	var whichKeyStr string

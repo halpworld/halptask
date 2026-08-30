@@ -35,3 +35,46 @@ func TestUnmarshalCorruptedTreeProto(t *testing.T) {
 		}
 	}
 }
+
+func TestItemProtoDueDateAndDueTextRoundTrip(t *testing.T) {
+	orig := &TreeProto{
+		SchemaVersion: 1,
+		LastModified:  123456789,
+		Roots: []*ItemProto{
+			{
+				Id:        "1",
+				Text:      "Deliver presentation",
+				IsTask:    true,
+				Status:    TaskStatus_TASK_STATUS_TODO,
+				DueDate:   1787654321,
+				DueText:   "tomorrow",
+				IsFocused: true,
+			},
+		},
+	}
+
+	data, err := MarshalTreeProto(orig)
+	if err != nil {
+		t.Fatalf("MarshalTreeProto failed: %v", err)
+	}
+
+	parsed, err := UnmarshalTreeProto(data)
+	if err != nil {
+		t.Fatalf("UnmarshalTreeProto failed: %v", err)
+	}
+
+	if len(parsed.Roots) != 1 {
+		t.Fatalf("expected 1 root, got %d", len(parsed.Roots))
+	}
+
+	root := parsed.Roots[0]
+	if root.DueDate != 1787654321 {
+		t.Errorf("expected DueDate 1787654321, got %d", root.DueDate)
+	}
+	if root.DueText != "tomorrow" {
+		t.Errorf("expected DueText 'tomorrow', got %q", root.DueText)
+	}
+	if !root.IsFocused {
+		t.Errorf("expected IsFocused to be true")
+	}
+}

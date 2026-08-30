@@ -32,6 +32,8 @@ type ItemProto struct {
 	Version   uint64
 	Note      string
 	IsFocused bool
+	DueDate   int64
+	DueText   string
 }
 
 type TreeProto struct {
@@ -136,6 +138,14 @@ func MarshalItemProto(item *ItemProto) ([]byte, error) {
 	// Field 14: is_focused (bool)
 	if item.IsFocused {
 		buf = appendVarintField(buf, 14, 1)
+	}
+	// Field 15: due_date (int64)
+	if item.DueDate != 0 {
+		buf = appendVarintField(buf, 15, uint64(item.DueDate))
+	}
+	// Field 16: due_text (string)
+	if item.DueText != "" {
+		buf = appendStringField(buf, 16, item.DueText)
 	}
 
 	return buf, nil
@@ -313,6 +323,20 @@ func UnmarshalItemProto(data []byte) (*ItemProto, error) {
 			}
 			offset += n
 			item.IsFocused = (val != 0)
+		case 15: // due_date
+			val, n, err := readVarint(data[offset:])
+			if err != nil {
+				return nil, err
+			}
+			offset += n
+			item.DueDate = int64(val)
+		case 16: // due_text
+			strBytes, n, err := readBytes(data[offset:])
+			if err != nil {
+				return nil, err
+			}
+			offset += n
+			item.DueText = string(strBytes)
 		default:
 			n, err := skipField(data[offset:], wireType)
 			if err != nil {

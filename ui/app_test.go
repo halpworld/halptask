@@ -401,8 +401,8 @@ func TestToggleDefaultItemType(t *testing.T) {
 		HelpModal: NewHelpModal(),
 	}
 
-	// Toggle via Leader key '<space> t D'
-	app.tryExecuteKeyBinding([]string{" ", "t", "D"})
+	// Toggle via Leader key '<space> b D'
+	app.tryExecuteKeyBinding([]string{" ", "b", "D"})
 	if app.Config.DefaultItemType != "task" {
 		t.Fatalf("expected DefaultItemType to be 'task' after toggle, got %s", app.Config.DefaultItemType)
 	}
@@ -411,12 +411,79 @@ func TestToggleDefaultItemType(t *testing.T) {
 	}
 
 	// Toggle again
-	app.tryExecuteKeyBinding([]string{" ", "t", "D"})
+	app.tryExecuteKeyBinding([]string{" ", "b", "D"})
 	if app.Config.DefaultItemType != "bullet" {
 		t.Fatalf("expected DefaultItemType to be 'bullet' after second toggle, got %s", app.Config.DefaultItemType)
 	}
 	if !strings.Contains(app.StatusMsg, "Bullet") {
 		t.Fatalf("expected status message to mention Bullet, got %q", app.StatusMsg)
+	}
+}
+
+func TestDueDateAndAgendaViewKeybindings(t *testing.T) {
+	cfg := config.DefaultConfig()
+	tree := model.NewTree()
+	item := tree.InsertBelow("", "Test task for scheduling")
+	item.IsTask = true
+	item.Status = model.StatusTodo
+
+	app, _ := InitialModel(cfg, model.NewStorage("", false))
+	app.Tree = tree
+	app.SelectedID = item.ID
+	app.CursorIndex = 0
+
+	// 1. Open Due Date Prompt via 'D'
+	newM, _ := app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'D'}})
+	app = newM.(AppModel)
+	if app.Mode != ModeDueDatePrompt {
+		t.Fatalf("expected ModeDueDatePrompt after pressing 'D', got %v", app.Mode)
+	}
+
+	// 2. Type 'tomorrow' and press Enter
+	app.DueDateInput.SetValue("tomorrow")
+	newM, _ = app.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	app = newM.(AppModel)
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after pressing Enter in prompt, got %v", app.Mode)
+	}
+	if !item.HasDueDate() {
+		t.Fatalf("expected item to have due date attached")
+	}
+	if item.DueText != "tomorrow" {
+		t.Fatalf("expected item DueText to be 'tomorrow', got %q", item.DueText)
+	}
+
+	// 3. Open Agenda View via '<space> a g'
+	app.tryExecuteKeyBinding([]string{" ", "a", "g"})
+	if app.Mode != ModeAgenda {
+		t.Fatalf("expected ModeAgenda after '<space> a g', got %v", app.Mode)
+	}
+	if app.AgendaModal == nil || len(app.AgendaModal.Entries) == 0 {
+		t.Fatalf("expected AgendaModal to have active entries")
+	}
+
+	// 4. Press Enter in Agenda View to jump to item
+	newM, _ = app.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	app = newM.(AppModel)
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after jumping from Agenda View, got %v", app.Mode)
+	}
+	if app.SelectedID != item.ID {
+		t.Fatalf("expected SelectedID to be %q, got %q", item.ID, app.SelectedID)
+	}
+
+	// 5. Open Agenda View via 'A'
+	newM, _ = app.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'A'}})
+	app = newM.(AppModel)
+	if app.Mode != ModeAgenda {
+		t.Fatalf("expected ModeAgenda after pressing 'A', got %v", app.Mode)
+	}
+
+	// 6. Press 'esc' to close Agenda View
+	newM, _ = app.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	app = newM.(AppModel)
+	if app.Mode != ModeNormal {
+		t.Fatalf("expected ModeNormal after pressing Esc in Agenda View, got %v", app.Mode)
 	}
 }
 

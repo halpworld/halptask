@@ -99,6 +99,7 @@ Legal practice demands absolute client confidentiality, meticulous clause-by-cla
 
 ### Key Features Used:
 - **AES-256-GCM Hardware-Grade Encryption**: Ensure client files meet strict data privacy and legal compliance requirements (`AES-256` + 100k iteration PBKDF2).
+- **Strict Court Deadlines (`D` / `due:...`) & Agenda View (`A`)**: Track statutory filing deadlines and statute of limitations with visual urgency badges and daily agenda audits.
 - **Hierarchical Clause & Case Nesting**: Subdivide litigation steps into discovery, motion drafting, exhibit indexing, and court filings.
 - **Multi-File Vaults (`halptask -f client_smith_2026.txt`)**: Keep each client's case file strictly separated in isolated data files.
 
@@ -107,11 +108,11 @@ Legal practice demands absolute client confidentiality, meticulous clause-by-cla
 - ⚖️ Case: Smith v. Acme Corp (Ref #2026-884) <!-- fold -->
   - 📁 Discovery Phase #litigation
     - [x] Review initial document production
-    - [~] Draft Interrogatories #urgent
+    - [~] Draft Interrogatories #urgent [Due: Tomorrow]
       - [x] Interrogatory #1-10: Corporate Structure
       - [~] Interrogatory #11-20: Financial Audits
   - 📝 Contract Review: Master Services Agreement
-    - [ ] Clause 4.2 (Indemnification): Draft counter-proposal
+    - [ ] Clause 4.2 (Indemnification): Draft counter-proposal [Due: Friday]
     - [ ] Clause 8.1 (Termination): Verify 30-day notice requirement
 ```
 
@@ -123,6 +124,8 @@ Writers, academics, and researchers require outline flexibility to organize thou
 
 ### Key Features Used:
 - **Bullet & Task Hybrid Outlining**: Seamlessly mix research notes (`•`) with actionable writing tasks (`[ ]`).
+- **Natural Language Scheduling (`due:+1w`, `due:mon`)**: Set progressive drafting targets and milestone deadlines.
+- **Agenda View Modal (`A`)**: Review writing deadlines and overdue literature reviews in one dedicated view.
 - **WhichKey Menu Hints (`<space>`)**: Effortless navigation without memorizing complex menu structures.
 - **Real-Time Text Search (`/`)**: Instant keyword searching and highlight navigation across extensive research notes.
 
@@ -132,7 +135,7 @@ Writers, academics, and researchers require outline flexibility to organize thou
   - 📄 Paxos vs Raft Comparison Notes
     - Leader election dynamics in partial network partitions
     - Log compaction strategies in production implementations
-  - [~] Chapter 3: Safety & Liveness Guarantees #drafting
+  - [~] Chapter 3: Safety & Liveness Guarantees #drafting [Due: Next Monday]
     - [x] Write section 3.1: State Machine Replication
     - [~] Write section 3.2: Byzantine Fault Tolerance #writing
 ```
@@ -141,10 +144,10 @@ Writers, academics, and researchers require outline flexibility to organize thou
 
 ## 📊 Summary Comparison Matrix
 
-| Profession | Key Feature Focus | Primary Tag Strategy | Security Mode |
-|---|---|---|---|
-| **Programmers** | Subtree Hoisting (`ff`), Vim Motions | `#bug`, `#refactor`, `#review` | Standard Markdown |
-| **DevOps / SRE** | Folds (`zc`/`zo`), Live Dashboard | `#devops`, `#aws`, `#urgent` | AES-256 Encrypted Vault |
-| **Product Managers** | Dynamic Tag Inheritance, Default Task Toggle | `#v2.0`, `#prio1`, `#design` | Standard Markdown |
-| **Lawyers** | Client Confidentiality, Isolated Files | `#litigation`, `#contract`, `#discovery` | AES-256 Encrypted Vault |
-| **Researchers** | Hybrid Bullet/Task Outlining, Real-time Search | `#research`, `#drafting`, `#chapter1` | Standard / Encrypted |
+| Profession | Key Feature Focus | Primary Tag Strategy | Scheduling & Due Dates | Security Mode |
+|---|---|---|---|---|
+| **Programmers** | Subtree Hoisting (`ff`), Vim Motions | `#bug`, `#refactor`, `#review` | Sprint deadlines (`due:friday`), Standup Agenda (`A`) | Standard Markdown |
+| **DevOps / SRE** | Folds (`zc`/`zo`), Live Dashboard | `#devops`, `#aws`, `#urgent` | Maintenance windows (`due:2026-09-15`) | AES-256 Encrypted Vault |
+| **Product Managers** | Dynamic Tag Inheritance, Default Task Toggle | `#v2.0`, `#prio1`, `#design` | Release milestones (`due:+2w`), Agenda Review (`<space> a g`) | Standard Markdown |
+| **Lawyers** | Client Confidentiality, Isolated Files | `#litigation`, `#contract`, `#discovery` | Statutory court deadlines (`D`), Overdue warnings | AES-256 Encrypted Vault |
+| **Researchers** | Hybrid Bullet/Task Outlining, Real-time Search | `#research`, `#drafting`, `#chapter1` | Progressive writing targets (`due:+1w`) | Standard / Encrypted |

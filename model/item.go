@@ -31,6 +31,8 @@ type Item struct {
 	Version   uint64     `json:"version,omitempty"`
 	Note      string     `json:"note,omitempty"`
 	IsFocused bool       `json:"is_focused,omitempty"`
+	DueDate   int64      `json:"due_date,omitempty"`
+	DueText   string     `json:"due_text,omitempty"`
 	Parent    *Item      `json:"-"`
 }
 
@@ -111,6 +113,48 @@ func (i *Item) ToggleTag(tag string) {
 	}
 }
 
+func (i *Item) HasDueDate() bool {
+	return i != nil && i.DueDate > 0
+}
+
+func (i *Item) IsOverdue(now time.Time) bool {
+	if !i.HasDueDate() || i.Status == StatusDone {
+		return false
+	}
+	dueDate := time.Unix(i.DueDate, 0).In(now.Location())
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	dueDayStart := time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 0, 0, 0, 0, dueDate.Location())
+	return dueDayStart.Before(todayStart)
+}
+
+func (i *Item) IsDueToday(now time.Time) bool {
+	if !i.HasDueDate() {
+		return false
+	}
+	dueDate := time.Unix(i.DueDate, 0).In(now.Location())
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	dueDayStart := time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 0, 0, 0, 0, dueDate.Location())
+	return dueDayStart.Equal(todayStart)
+}
+
+func (i *Item) SetDueDate(t time.Time, raw string) {
+	if i == nil {
+		return
+	}
+	i.DueDate = t.Unix()
+	i.DueText = raw
+	i.UpdatedAt = time.Now().UnixNano()
+}
+
+func (i *Item) ClearDueDate() {
+	if i == nil {
+		return
+	}
+	i.DueDate = 0
+	i.DueText = ""
+	i.UpdatedAt = time.Now().UnixNano()
+}
+
 func (i *Item) Clone() *Item {
 	if i == nil {
 		return nil
@@ -131,6 +175,8 @@ func (i *Item) Clone() *Item {
 		Version:   i.Version,
 		Note:      i.Note,
 		IsFocused: i.IsFocused,
+		DueDate:   i.DueDate,
+		DueText:   i.DueText,
 	}
 	for _, child := range i.Children {
 		childClone := child.Clone()
@@ -188,6 +234,8 @@ func (i *Item) ToProto() *storagepb.ItemProto {
 		Version:   i.Version,
 		Note:      i.Note,
 		IsFocused: i.IsFocused,
+		DueDate:   i.DueDate,
+		DueText:   i.DueText,
 	}
 	for _, child := range i.Children {
 		if childProto := child.ToProto(); childProto != nil {
@@ -217,6 +265,8 @@ func ItemFromProto(pb *storagepb.ItemProto) *Item {
 		Version:   pb.Version,
 		Note:      SanitizeTerminalEscapeArtifacts(pb.Note),
 		IsFocused: pb.IsFocused,
+		DueDate:   pb.DueDate,
+		DueText:   pb.DueText,
 	}
 	for _, childProto := range pb.Children {
 		if child := ItemFromProto(childProto); child != nil {

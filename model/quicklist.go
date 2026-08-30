@@ -179,7 +179,24 @@ func EvaluateTreeTasks(tree *Tree, now time.Time) []EvaluatedTask {
 	recurse = func(items []*Item) {
 		for _, item := range items {
 			if item.IsTask {
-				cleanTitle, rawDue, dueDate, hasDue := ExtractDueDate(item.Text)
+				cleanTitle := item.Text
+				var rawDue string
+				var dueDate time.Time
+				hasDue := false
+
+				if item.DueDate > 0 {
+					hasDue = true
+					rawDue = item.DueText
+					parsed := time.Unix(item.DueDate, 0).In(now.Location())
+					dueDate = time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, parsed.Location())
+				} else {
+					var extDue time.Time
+					cleanTitle, rawDue, extDue, hasDue = ExtractDueDate(item.Text)
+					if hasDue {
+						dueDate = extDue
+					}
+				}
+
 				dueStatus := "none"
 				if hasDue {
 					if dueDate.Before(todayMidnight) {

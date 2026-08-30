@@ -112,11 +112,17 @@ Follow these steps to master the basics:
 2. Press `a` to attach a tag like `#urgent` or `#backend`.
 3. Subtasks underneath will dynamically inherit this tag (`[↖🔥 urgent]`)!
 
-### Step 4: Toggle the Live Dashboard (`<space> d`)
+### Step 4: Schedule Tasks & Open Agenda View (`D` / `A`)
+1. With your cursor on `Migrate database cluster`, press `D` to open the **Set Due Date** prompt.
+2. Type `tomorrow` (or `+2d`, `friday`, `2026-09-01`) and press `Enter`.
+3. Notice the highlighted due date badge in your tree!
+4. Press `A` (or `<space> a g`) to open the **Agenda View** to view your tasks organized by deadline.
+
+### Step 5: Toggle the Live Dashboard (`<space> d`)
 1. Press `<space> d` to toggle the side overview dashboard pane.
 2. View total completed vs active tasks and your visual progress bar!
 
-### Step 5: Save & Exit (`<space> w` / `<space> q`)
+### Step 6: Save & Exit (`<space> w` / `<space> q`)
 1. Press `<space> w` or `ww` to save your file.
 2. Press `<space> q` to quit.
 

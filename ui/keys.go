@@ -34,18 +34,19 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{" ", "n"}, KeyString: "n", Label: "open/edit task note", Category: "Tasks"},
 		{Keys: []string{" ", "t", "f"}, KeyString: "f", Label: "toggle/exit focus mode", Category: "Tasks"},
 		{Keys: []string{" ", "t", "h"}, KeyString: "h", Label: "toggle hide completed", Category: "Tasks"},
-		{Keys: []string{" ", "t", "D"}, KeyString: "D", Label: "toggle default type", Category: "Tasks"},
+		{Keys: []string{" ", "t", "D"}, KeyString: "D", Label: "set/edit due date", Category: "Tasks"},
 
 		// Leader Focus Mode operations
 		{Keys: []string{" ", "f", "o"}, KeyString: "o", Label: "toggle/exit focus mode", Category: "Focus"},
 		{Keys: []string{" ", "f", "f"}, KeyString: "f", Label: "toggle/exit focus mode", Category: "Focus"},
 		{Keys: []string{" ", "f", "c"}, KeyString: "c", Label: "clear current focus", Category: "Focus"},
 
-		// Leader Archive operations
+		// Leader Archive & Agenda operations
 		{Keys: []string{" ", "a", "a"}, KeyString: "a", Label: "archive selected item", Category: "Archive"},
 		{Keys: []string{" ", "a", "c"}, KeyString: "c", Label: "archive completed tasks", Category: "Archive"},
 		{Keys: []string{" ", "a", "v"}, KeyString: "v", Label: "view / restore archive", Category: "Archive"},
 		{Keys: []string{" ", "a", "r"}, KeyString: "r", Label: "view / restore archive", Category: "Archive"},
+		{Keys: []string{" ", "a", "g"}, KeyString: "g", Label: "view agenda / schedule", Category: "Archive"},
 
 		// Leader Fold & Zoom operations
 		{Keys: []string{" ", "z", "c"}, KeyString: "c", Label: "close fold", Category: "Folds"},
@@ -84,6 +85,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{"g", "g"}, KeyString: "gg", Label: "go to top", Category: "Nav"},
 		{Keys: []string{"g", "i"}, KeyString: "gi", Label: "jump to item by ID", Category: "Nav"},
 		{Keys: []string{"G"}, KeyString: "G", Label: "go to bottom", Category: "Nav"},
+		{Keys: []string{"A"}, KeyString: "A", Label: "open agenda view", Category: "Nav"},
 
 		{Keys: []string{"o", "o"}, KeyString: "oo", Label: "new bullet below", Category: "Edit"},
 		{Keys: []string{"o", "c"}, KeyString: "oc", Label: "add child bullet", Category: "Edit"},
@@ -92,6 +94,7 @@ func GetAllKeyBindings() []KeyBinding {
 		{Keys: []string{"a"}, KeyString: "a", Label: "edit text", Category: "Edit"},
 		{Keys: []string{"d", "d"}, KeyString: "dd", Label: "delete bullet", Category: "Edit"},
 		{Keys: []string{"x"}, KeyString: "x", Label: "delete bullet", Category: "Edit"},
+		{Keys: []string{"D"}, KeyString: "D", Label: "set/edit due date", Category: "Tasks"},
 
 		{Keys: []string{"tab"}, KeyString: "tab", Label: "indent", Category: "Edit"},
 		{Keys: []string{"shift+tab"}, KeyString: "shift+tab", Label: "unindent", Category: "Edit"},

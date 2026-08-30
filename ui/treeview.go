@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/halpworld/halptask/config"
@@ -117,6 +118,22 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 
 	groupFocusedTextStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#7dcfff"))
+
+	dueOverdueStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#f7768e"))
+
+	dueTodayStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#e0af68"))
+
+	dueUpcomingStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#7dcfff")).
+		Faint(true)
+
+	dueDoneStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#565f89")).
+		Faint(true)
 
 	var lines []string
 
@@ -233,6 +250,25 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 		tagStr := tv.formatTags(item)
 		if tagStr != "" {
 			formattedText += " " + tagStr
+		}
+
+		// Due date badge rendering
+		if item.DueDate > 0 {
+			badge, cat := model.FormatDueBadge(item.DueDate, item.Status == model.StatusDone, time.Now())
+			if badge != "" {
+				var styledBadge string
+				switch cat {
+				case "overdue":
+					styledBadge = dueOverdueStyle.Render(badge)
+				case "today":
+					styledBadge = dueTodayStyle.Render(badge)
+				case "done":
+					styledBadge = dueDoneStyle.Render(badge)
+				default:
+					styledBadge = dueUpcomingStyle.Render(badge)
+				}
+				formattedText += " " + styledBadge
+			}
 		}
 
 		lineContent := fmt.Sprintf("%s%s%s%s%s%s", cursorStr, indentStr, prefix, idStr, statusBox, formattedText)

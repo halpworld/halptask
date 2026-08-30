@@ -29,6 +29,8 @@ message ItemProto {
   uint64 version = 12;
   string note = 13;
   bool is_focused = 14;
+  int64 due_date = 15;
+  string due_text = 16;
 }
 
 message TreeProto {

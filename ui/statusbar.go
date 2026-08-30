@@ -21,6 +21,8 @@ const (
 	ModeJumpToID
 	ModeArchive
 	ModeNote
+	ModeAgenda
+	ModeDueDatePrompt
 )
 
 func (m AppMode) String() string {
@@ -45,6 +47,10 @@ func (m AppMode) String() string {
 		return "ARCHIVE"
 	case ModeNote:
 		return "NOTE"
+	case ModeAgenda:
+		return "AGENDA"
+	case ModeDueDatePrompt:
+		return "DUE DATE"
 	default:
 		return "NORMAL"
 	}

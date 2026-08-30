@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -329,6 +330,14 @@ func ParseMarkdown(content string) *Tree {
 			item = NewItem(id, text)
 		}
 
+		// Extract inline due date if present
+		cleanDueText, parsedDueDate, rawDue, hasDue := ExtractDueToken(text, time.Now())
+		if hasDue && parsedDueDate != nil {
+			item.DueDate = parsedDueDate.Unix()
+			item.DueText = rawDue
+			text = cleanDueText
+		}
+
 		// Extract #tags from text
 		cleanText, tags := parseTagsFromText(text)
 		item.Text = cleanText
@@ -411,6 +420,11 @@ func SerializeMarkdown(tree *Tree) string {
 
 			for _, tag := range item.Tags {
 				builder.WriteString(" #" + tag)
+			}
+
+			if item.DueDate > 0 {
+				dStr := time.Unix(item.DueDate, 0).Format("2006-01-02")
+				builder.WriteString(fmt.Sprintf(" @due(%s)", dStr))
 			}
 
 			if item.Folded {

@@ -42,9 +42,18 @@ Pressing `<space>` or pressing the first key of any multi-character command (suc
 | `Esc` / `q` / `fo` / `tf` | `🎯` | Exit / Toggle **Current Focus Task** & display top Focus Banner |
 | `<space> t a` | `🏷️` | Open **Tag / Label Manager** overlay |
 | `<space> n` / `<space> t n` | `📝` | Open / Edit **Task Markdown Note** modal |
-| `<space> t D` | `⚙️` | Toggle default item creation type (`bullet` <-> `task`) |
+| `<space> t D` / `D` | `⏰` | Open **Set / Edit Due Date** prompt |
 
-### 3. Fold Menu (`<space> z ...`)
+### 3. Agenda & Archive Menu (`<space> a ...`)
+
+| Shortcut | Action | Description |
+|---|---|---|
+| `<space> a g` / `A` | Agenda View | Open interactive **Agenda & Schedule View** modal |
+| `<space> a a` | Archive Selected | Archives selected bullet/task and its entire subtree |
+| `<space> a c` | Archive Completed | Sweeps and archives all completed `[x]` tasks |
+| `<space> a v` / `a r` | Archive Browser | Open interactive Archive View modal to filter, restore, or delete |
+
+### 4. Fold Menu (`<space> z ...`)
 
 | Shortcut | Action | Description |
 |---|---|---|
@@ -113,6 +122,8 @@ You can also use single or double-character Vim motions directly without pressin
 | `J` | Move bullet down among siblings |
 | `K` | Move bullet up among siblings |
 | `t` | Toggle bullet into task / Cycle task status |
+| `D` | Open **Set / Edit Due Date** prompt |
+| `A` | Open **Agenda & Schedule View** modal |
 | `T` | Open **Tag / Label Manager** overlay |
 | `N` | Open / Edit **Task Markdown Note** modal |
 | `fc` | Toggle hide/show `[x]` completed tasks |
@@ -120,6 +131,34 @@ You can also use single or double-character Vim motions directly without pressin
 | `ww` | Quick save file to disk |
 | `u` | Undo last modification |
 | `Ctrl+r` | Redo last modification |
+
+---
+
+## ⏰ Due Dates, Deadlines & Natural Language Scheduling
+
+HalpTask provides first-class temporal task scheduling with intuitive natural language support.
+
+### 1. Attaching Due Dates
+- **Inline during Task Writing**: Type `due:<when>` or `@due(<when>)` anywhere in your task line (e.g. `Prepare slides due:tomorrow #work`). HalpTask extracts the date into structured metadata and cleans the title automatically.
+- **Interactive Prompt (`D` or `<space> t D`)**: Highlight any task and press `D` to open the quick setter prompt.
+
+### 2. Supported Natural Language Date Formats:
+- `today`, `tdy`: Sets deadline to end of current day.
+- `tomorrow`, `tmrw`: Sets deadline to tomorrow.
+- `yesterday`, `ydy`: Sets deadline to yesterday (for logging past work).
+- `+1d`, `3d`, `+1w`, `2w`, `+1m`: Relative day, week, and month offsets.
+- `mon`, `monday`, `fri`, `friday`: Upcoming weekday targets.
+- `2026-08-25`, `08/25`, `Aug 25`: Explicit ISO and calendar date formats.
+
+### 3. Visual Urgency Badges:
+- 🔴 `[Overdue: 2d]`: Bold Red alert for passed deadlines on incomplete tasks.
+- 🟡 `[Due Today]`: Amber warning for tasks due today.
+- 🔵 `[Due: Tomorrow]` / `[Due: Fri]`: Subtle cyan info for upcoming deadlines.
+- 🏁 `[Due: Aug 25]`: Muted gray styling on completed (`[x]`) tasks.
+
+### 4. Interactive Agenda & Schedule View (`<space> a g` / `A`):
+- Displays a dedicated categorized modal grouping tasks into **OVERDUE**, **DUE TODAY**, **THIS WEEK**, **UPCOMING**, and **COMPLETED**.
+- Use `j`/`k` to navigate, `t`/`x`/`Space` to cycle task statuses directly, `D` to edit/clear due dates, `/` to filter, and `Enter` to jump directly to that task in your tree outliner!
 
 ---
 

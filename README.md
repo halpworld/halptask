@@ -71,6 +71,13 @@ Comprehensive guides and persona workflows are documented in our **[GitHub Wiki]
   - Assign direct tags (`T` or `<space> t a`) with emojis and customizable colors.
   - Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`). Unindenting/moving subtasks automatically cleans up inherited tags.
   - Plain text Markdown storage as `#tagname`.
+- **Due Dates, Deadlines & Natural Language Scheduling ⏰**:
+  - Attach due dates inline during insert mode or quick capture: `due:today`, `due:tomorrow`, `due:friday`, `due:+3d`, `due:2026-08-25`, or `@due(2026-08-25)`.
+  - Quick date setter modal via `D` in Normal mode or `<space> t D`.
+  - Color-coded in-tree urgency badges: 🔴 `[Overdue: 2d]` (Bold Red alert), 🟡 `[Due Today]` (Amber warning), 🔵 `[Due: Tomorrow]` / `[Due: Fri]` (Cyan subtle), and 🏁 `[Due: Aug 25]` (Muted completed).
+- **Interactive Agenda View Modal 📅 (`<space> a g` / `A`)**:
+  - Full-screen / popup schedule modal categorizing tasks into **Overdue**, **Due Today**, **This Week**, **Upcoming**, and **Completed**.
+  - Navigate with `j`/`k`, cycle status with `t`/`x`/`Space`, edit due dates with `D`, filter with `/`, and press `Enter` to jump straight to that task in your tree.
 - **Focus Mode & Top Focus Banner 🎯**:
   - Quickly mark any task or task group as your active focus item (`fo` / `tf` / `<space> t f`), and exit focus mode instantly with `Esc` or `q`.
   - Highlights focused tasks with vivid `🎯 FOCUS` badges, bold cyan text, and subtle subtask group focus indicators.
@@ -203,10 +210,14 @@ HALPTASK_PASSPHRASE="secret" halptask add "Confidential notes #vault" -f ~/.conf
 | `<space> t s` | Tasks | Mark Todo `[ ]` (Gray empty) |
 | `<space> t a` / `T` | Tasks | Manage task tags & labels |
 | `<space> n` / `N` | Tasks | Open / edit task Markdown note |
-| `<space> t D` | Tasks | Toggle default creation type (`bullet` <-> `task`) |
+| `<space> t D` / `D` | Tasks | Set / edit task due date prompt |
+| `<space> a g` / `A` | Agenda | Open interactive Agenda & Schedule modal |
+| `<space> a a` | Archive | Archive selected item subtree |
+| `<space> a c` | Archive | Archive completed tasks |
+| `<space> a v` / `a r` | Archive | View / restore archive browser |
 | `<space> c c` | Config | Open interactive Config Dashboard modal |
 | `<space> c a` | Config | Toggle Auto-Save |
-| `<space> c d` | Config | Toggle default creation item type (`bullet` <-> `task`) |
+| `<space> c d` / `b D` | Config | Toggle default creation item type (`bullet` <-> `task`) |
 | `<space> c t` | Config | Cycle visual theme palette |
 | `<space> c w` | Config | Toggle WhichKey popup menu |
 | `<space> c e` | Config | Open `config.yaml` in `$EDITOR` (auto-reloaded on exit) |

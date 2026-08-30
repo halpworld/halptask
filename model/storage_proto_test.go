@@ -347,3 +347,66 @@ func TestEmptyProtobufStorageLoad(t *testing.T) {
 		t.Fatalf("expected 0 roots for empty tree, got %d items (possible markdown fallback gibberish)", len(loadedTree.Roots))
 	}
 }
+
+func TestProtobufDueDateRoundTrip(t *testing.T) {
+	tree := model.NewTree()
+	r := tree.InsertBelow("", "Finish project proposal")
+	r.IsTask = true
+	r.Status = model.StatusTodo
+	r.DueDate = 1787654321
+	r.DueText = "tomorrow"
+
+	data, err := model.SerializeProtobuf(tree)
+	if err != nil {
+		t.Fatalf("SerializeProtobuf failed: %v", err)
+	}
+
+	parsed, err := model.ParseProtobuf(data)
+	if err != nil {
+		t.Fatalf("ParseProtobuf failed: %v", err)
+	}
+
+	if len(parsed.Roots) != 1 {
+		t.Fatalf("expected 1 root, got %d", len(parsed.Roots))
+	}
+
+	root := parsed.Roots[0]
+	if root.DueDate != 1787654321 {
+		t.Errorf("expected DueDate 1787654321, got %d", root.DueDate)
+	}
+	if root.DueText != "tomorrow" {
+		t.Errorf("expected DueText 'tomorrow', got %q", root.DueText)
+	}
+	if !root.HasDueDate() {
+		t.Errorf("expected HasDueDate to be true")
+	}
+}
+
+func TestMarkdownDueDateRoundTrip(t *testing.T) {
+	markdown := `- [ ] Write documentation @due(2026-08-30) <!-- id: 1 -->
+- [ ] Prepare release due:tomorrow <!-- id: 2 -->
+`
+	tree := model.ParseMarkdown(markdown)
+	if len(tree.Roots) != 2 {
+		t.Fatalf("expected 2 roots, got %d", len(tree.Roots))
+	}
+
+	if !tree.Roots[0].HasDueDate() {
+		t.Errorf("expected root 0 to have due date")
+	}
+	if tree.Roots[0].Text != "Write documentation" {
+		t.Errorf("expected clean text 'Write documentation', got %q", tree.Roots[0].Text)
+	}
+
+	if !tree.Roots[1].HasDueDate() {
+		t.Errorf("expected root 1 to have due date")
+	}
+	if tree.Roots[1].Text != "Prepare release" {
+		t.Errorf("expected clean text 'Prepare release', got %q", tree.Roots[1].Text)
+	}
+
+	serialized := model.SerializeMarkdown(tree)
+	if !strings.Contains(serialized, "@due(2026-08-30)") {
+		t.Errorf("expected serialized markdown to contain @due(2026-08-30), got: %s", serialized)
+	}
+}

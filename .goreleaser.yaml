@@ -60,7 +60,7 @@ nfpms:
       {{- else if eq .Arch "arm64" }}arm64
       {{- else }}{{ .Arch }}{{ end }}
 
-brews:
+homebrew_casks:
   - name: halptask
     ids:
       - default
@@ -72,8 +72,6 @@ brews:
     homepage: "https://github.com/halpworld/halptask"
     description: "A high-performance keyboard-driven TUI bullet point outliner and task manager"
     license: "GPL-3.0"
-    install: |
-      bin.install "halptask"
 
 
 

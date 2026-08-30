@@ -42,6 +42,8 @@
 - **Leader Key & WhichKey System (`<space>`)**: Non-intrusive popup menu guide that updates in real time as you type key sequences.
 - **Hierarchical Outliner & Folding**: Collapse subtrees (`zc`), expand (`zo`), toggle (`za`), or fold everything (`zM`/`zR`) with dynamic child counters.
 - **Task Management**: Convert bullets into rich tasks with status cycling: `[ ]` Todo ➔ `[~]` In Progress ➔ `[x]` Done.
+- **Due Dates, Deadlines & Natural Language Scheduling ⏰**: Attach due dates inline (`due:today`, `due:tomorrow`, `due:+3d`, `due:2026-08-25`, `@due(...)`) or via modal prompt (`D` / `<space> t D`). Features color-coded urgency badges (🔴 `[Overdue: 2d]`, 🟡 `[Due Today]`, 🔵 `[Due: Fri]`, 🏁 `[Due: Aug 25]`).
+- **Interactive Agenda View Modal 📅 (`<space> a g` / `A`)**: Full-screen schedule modal grouping tasks across the tree into **Overdue**, **Due Today**, **This Week**, **Upcoming**, and **Completed** with instant jump-to-node (`Enter`).
 - **Focus Mode & Top Focus Banner 🎯**: Mark any task/task group as your current focus (`fo` / `tf` / `<space> t f`). Renders vivid `🎯 FOCUS` badges, group focus indicators, and a persistent top Focus Banner with task context & attached note previews.
 - **Tag & Label System 🏷️**: Assign direct tags (`T` / `<space> t a`) with custom emojis & colors. Subtasks dynamically inherit parent tags (`[↖🔥 urgent]`).
 - **Headless CLI Quick-Capture & Status Bar Querying ⚡**: Capture tasks in <1s directly from terminal sessions (`halptask add "Task #tag due:tomorrow"`) and query status tallies (`halptask list --count`) for tmux, Polybar, and Waybar.

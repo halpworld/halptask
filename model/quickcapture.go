@@ -208,10 +208,18 @@ func RunQuickCapture(cfg *config.Config, opts QuickCaptureOptions) (*Item, strin
 		status = StatusNone
 	}
 
-	// Prepare stored item text
+	// Prepare stored item text and due date
 	storedText := cleanTitle
+	var itemDueDate int64
+	var itemDueText string
+
 	if rawDue != "" {
-		storedText = fmt.Sprintf("%s due:%s", cleanTitle, rawDue)
+		if parsedDue, normRaw, err := ParseDueString(rawDue, time.Now()); err == nil {
+			itemDueDate = parsedDue.Unix()
+			itemDueText = normRaw
+		} else {
+			storedText = fmt.Sprintf("%s due:%s", cleanTitle, rawDue)
+		}
 	}
 
 	inbox := FindOrCreateInbox(tree, opts.InboxName)
@@ -228,6 +236,8 @@ func RunQuickCapture(cfg *config.Config, opts QuickCaptureOptions) (*Item, strin
 		CreatedAt: now,
 		UpdatedAt: now,
 		Version:   1,
+		DueDate:   itemDueDate,
+		DueText:   itemDueText,
 	}
 
 	if opts.PrependTop {
