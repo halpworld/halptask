@@ -115,7 +115,7 @@ func (t *Tree) FlattenVisibleFiltered(zoomedID string, hideCompleted bool) []Vis
 	var recurse func(items []*Item, depth int)
 	recurse = func(items []*Item, depth int) {
 		for _, item := range items {
-			if hideCompleted && item.IsTask && item.Status == StatusDone {
+			if hideCompleted && item.IsTask && item.EffectiveStatus() == StatusDone {
 				continue
 			}
 			v := VisibleItem{
@@ -142,7 +142,7 @@ func (t *Tree) DeleteCompleted() int {
 	filterItems = func(items []*Item) []*Item {
 		var result []*Item
 		for _, item := range items {
-			if item.IsTask && item.Status == StatusDone {
+			if item.IsTask && item.EffectiveStatus() == StatusDone {
 				count++
 				continue
 			}
@@ -546,7 +546,7 @@ func (t *Tree) ToggleTask(id string) {
 
 func (t *Tree) CycleStatus(id string) {
 	item := t.FindItem(id)
-	if item == nil {
+	if item == nil || (item.IsTask && item.HasSubtasks()) {
 		return
 	}
 	if !item.IsTask {
@@ -554,7 +554,7 @@ func (t *Tree) CycleStatus(id string) {
 		item.Status = StatusTodo
 		return
 	}
-	switch item.Status {
+	switch item.EffectiveStatus() {
 	case StatusTodo:
 		item.Status = StatusInProgress
 	case StatusInProgress:
@@ -568,11 +568,29 @@ func (t *Tree) CycleStatus(id string) {
 
 func (t *Tree) SetStatus(id string, status TaskStatus) {
 	item := t.FindItem(id)
-	if item == nil {
+	if item == nil || (item.IsTask && item.HasSubtasks()) {
 		return
 	}
 	item.IsTask = true
 	item.Status = status
+}
+
+// SetSubtreeStatus is the explicit bulk operation, used after UI confirmation.
+func (t *Tree) SetSubtreeStatus(id string, status TaskStatus) {
+	item := t.FindItem(id)
+	if item == nil {
+		return
+	}
+	var visit func(*Item)
+	visit = func(node *Item) {
+		if node.IsTask {
+			node.Status = status
+		}
+		for _, child := range node.Children {
+			visit(child)
+		}
+	}
+	visit(item)
 }
 
 func (t *Tree) GetFocusedItem() *Item {
@@ -690,7 +708,7 @@ func (t *Tree) GetStats() TaskStats {
 		for _, item := range items {
 			if item.IsTask {
 				stats.Total++
-				switch item.Status {
+				switch item.EffectiveStatus() {
 				case StatusTodo:
 					stats.Todo++
 				case StatusInProgress:
@@ -811,7 +829,7 @@ func (t *Tree) GetInProgressTasks() []TaskWithContext {
 	var recurse func(items []*Item)
 	recurse = func(items []*Item) {
 		for _, item := range items {
-			if item.IsTask && item.Status == StatusInProgress {
+			if item.IsTask && item.EffectiveStatus() == StatusInProgress {
 				parentPath := ""
 				if item.Parent != nil {
 					var ancestorTexts []string
@@ -878,7 +896,7 @@ func (t *Tree) ArchiveCompleted() []*ArchivedEntry {
 	collectAndRemove = func(items []*Item) []*Item {
 		var remaining []*Item
 		for _, item := range items {
-			if item.IsTask && item.Status == StatusDone {
+			if item.IsTask && item.EffectiveStatus() == StatusDone {
 				parentPath := t.GetParentPath(item)
 				entries = append(entries, &ArchivedEntry{
 					ID:         item.ID,
