@@ -57,6 +57,10 @@ func ParseCaptureText(rawText string) (cleanTitle string, tags []string, rawDue 
 
 	for _, w := range words {
 		lowerW := strings.ToLower(w)
+		if strings.HasPrefix(lowerW, "@due(") && strings.HasSuffix(w, ")") {
+			rawDue = w[5 : len(w)-1]
+			continue
+		}
 		// Check for due: prefix
 		if (strings.HasPrefix(lowerW, "due:") || strings.HasPrefix(lowerW, "due=")) && len(w) > 4 {
 			dueVal := strings.Trim(w[4:], "\"'")
@@ -92,7 +96,7 @@ func FindOrCreateInbox(tree *Tree, inboxName string) *Item {
 	if inboxName == "" {
 		inboxName = "Inbox"
 	}
-	cleanInboxName := strings.TrimPrefix(inboxName, "#")
+	cleanInboxName := strings.ToLower(strings.TrimPrefix(inboxName, "#"))
 
 	for _, root := range tree.Roots {
 		rootClean := strings.TrimPrefix(root.Text, "#")
@@ -143,36 +147,22 @@ func ResolvePassphrase(filePath string, forceEncrypt bool, in io.Reader, out io.
 
 // RunQuickCapture parses user input, loads the storage tree, inserts the new node, and saves.
 func RunQuickCapture(cfg *config.Config, opts QuickCaptureOptions) (*Item, string, error) {
+	if opts.IsTask && opts.IsBullet {
+		return nil, "", errors.New("--task and --bullet cannot be combined")
+	}
 	if strings.TrimSpace(opts.RawText) == "" {
 		return nil, "", errors.New("task text cannot be empty")
 	}
 
-	targetFilePath := opts.FilePath
-	if targetFilePath == "" {
-		if cfg != nil && cfg.DataFile != "" {
-			targetFilePath = cfg.DataFile
-		} else {
-			targetFilePath = config.DefaultConfig().DataFile
-		}
-	}
-
-	isEncrypted := opts.Encrypt || (cfg != nil && cfg.Encrypted)
-	passphrase := opts.Passphrase
-	if passphrase == "" {
-		var err error
-		passphrase, err = ResolvePassphrase(targetFilePath, isEncrypted, os.Stdin, os.Stderr)
-		if err != nil {
-			return nil, "", err
-		}
-	}
-
-	storage := NewStorage(targetFilePath, isEncrypted)
-	tree, err := storage.Load(passphrase)
+	storage, tree, passphrase, err := loadHeadlessStorage(cfg, opts.FilePath, opts.Encrypt, opts.Passphrase)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to load data file %s: %w", targetFilePath, err)
+		return nil, "", err
 	}
 
 	cleanTitle, parsedTags, rawDue, parsedIsTask, parsedStatus := ParseCaptureText(opts.RawText)
+	if strings.TrimSpace(cleanTitle) == "" {
+		return nil, "", errors.New("task title cannot be empty")
+	}
 
 	// Combine tags from text and explicit flags
 	tagSet := make(map[string]bool)
@@ -251,7 +241,7 @@ func RunQuickCapture(cfg *config.Config, opts QuickCaptureOptions) (*Item, strin
 	tree.SetParents()
 
 	if err := storage.Save(tree, passphrase); err != nil {
-		return nil, "", fmt.Errorf("failed to save data file %s: %w", targetFilePath, err)
+		return nil, "", fmt.Errorf("failed to save data file %s: %w", storage.FilePath, err)
 	}
 
 	// Build confirmation message
@@ -267,11 +257,12 @@ func RunQuickCapture(cfg *config.Config, opts QuickCaptureOptions) (*Item, strin
 		}
 	}
 
-	confirmMsg := fmt.Sprintf("✔ %s: %q", itemTypeStr, cleanTitle)
+	itemTypeStr = strings.ReplaceAll(itemTypeStr, "Inbox", inbox.Text)
+	confirmMsg := fmt.Sprintf("✔ %s: %q", itemTypeStr, storedText)
 	for _, t := range finalTags {
 		msgParts = append(msgParts, fmt.Sprintf("[#%s]", t))
 	}
-	if rawDue != "" {
+	if itemDueDate != 0 {
 		msgParts = append(msgParts, fmt.Sprintf("[Due: %s]", FormatDueDisplay(rawDue)))
 	}
 	if len(msgParts) > 0 {

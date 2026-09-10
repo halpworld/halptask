@@ -161,12 +161,23 @@ halptask add "Deploy hotfix" --top
 
 # 2. Status Bar & Shell Querying
 halptask list --count        # Outputs: 📋 4 todo, 1 in-progress, 2 overdue (for tmux / Waybar)
-halptask list --today        # Outputs formatted table of tasks due today or in progress
+halptask list --today        # Outputs active tasks due today, overdue, or in progress
 halptask list --json         # Outputs structured JSON for shell automation scripts
 
 # 3. Encrypted Vault Automation
 HALPTASK_PASSPHRASE="secret" halptask add "Confidential notes #vault" -f ~/.config/halptask/vault.pb
 ```
+
+Capture defaults to a task regardless of the TUI's `default_item_type`; use `--bullet` for notes. Flags may follow the description. For a Markdown status prefix beginning with `-`, put flags first and use `--`:
+
+```bash
+halptask add --tag ops -- "- [~] Investigate timeout due:today"
+halptask list --all --json  # Include completed tasks
+```
+
+`list --today` excludes completed tasks. `--count` always summarizes the entire file; overdue tasks are also included in the todo or in-progress totals. `--count` and `--json` are mutually exclusive. Piped output contains no ANSI formatting.
+
+Commands use `config.yaml`'s `data_file` (default `~/.config/halptask/data.pb`), or `-f` / `--file` after the subcommand. Missing files start empty, without demo tasks. Listing never migrates the data file; capturing saves Protobuf at the same path, including legacy `.txt` paths. Existing encryption is preserved automatically; `--encrypt` enables it for a new file. Encrypted commands use `HALPTASK_PASSPHRASE`, or securely prompt on terminal stdin; without either they exit with an error.
 
 #### CLI Subcommand & Flag Reference:
 

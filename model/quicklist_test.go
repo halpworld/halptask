@@ -189,3 +189,13 @@ func TestRunQuickList(t *testing.T) {
 		}
 	})
 }
+
+func TestEvaluateTreeTasksUsesReferenceDate(t *testing.T) {
+	now := time.Date(2030, 1, 2, 12, 0, 0, 0, time.UTC)
+	tree := NewTree()
+	tree.Roots = []*Item{NewTask("1", "Review due:today", StatusTodo)}
+	tasks := EvaluateTreeTasks(tree, now)
+	if len(tasks) != 1 || tasks[0].DueStatus != "today" || tasks[0].DueDate.Year() != 2030 {
+		t.Fatalf("incorrect reference date: %+v", tasks)
+	}
+}

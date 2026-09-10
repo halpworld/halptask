@@ -116,3 +116,7 @@ To prevent data corruption or accidental lockouts, HalpTask implements safety me
      HALPTASK_PASSPHRASE="my-secret-vault-key" halptask list --count
      ```
    - If `HALPTASK_PASSPHRASE` is not set and the command is executed in an interactive terminal, HalpTask prompts securely via `term.ReadPassword` on standard error.
+
+### Headless storage behavior
+
+`halptask add` and `list` resolve `data_file` from this configuration, with `-f` after the subcommand taking precedence. A leading `~/` is expanded. Missing files produce empty lists and captures create only the Inbox and requested item. Headless listing does not migrate or rewrite data files; capture saves Protobuf at the selected path, even for legacy `.txt` files. Existing encrypted files remain encrypted when appended to, without requiring `--encrypt` again. Use `HALPTASK_PASSPHRASE` for unattended commands; otherwise terminal stdin is required for the secure password prompt. Incorrect or unavailable passwords fail without modifying the data file.
