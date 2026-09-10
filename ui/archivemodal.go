@@ -270,7 +270,7 @@ func (m *ArchiveModal) Render(width, height int) string {
 
 			icon := "•"
 			if entry.Item != nil && entry.Item.IsTask {
-				switch entry.Item.Status {
+				switch entry.Item.EffectiveStatus() {
 				case model.StatusDone:
 					icon = "[x]"
 				case model.StatusInProgress:
@@ -343,7 +343,7 @@ func (m *ArchiveModal) Render(width, height int) string {
 			indent := strings.Repeat("  ", depth)
 			icon := "•"
 			if item.IsTask {
-				switch item.Status {
+				switch item.EffectiveStatus() {
 				case model.StatusDone:
 					icon = "[x]"
 				case model.StatusInProgress:

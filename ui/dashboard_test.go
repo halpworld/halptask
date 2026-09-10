@@ -29,8 +29,8 @@ func TestDashboardViewRenderingAndInProgressSubtasks(t *testing.T) {
 
 	// Verify GetInProgressTasks
 	inProgress := tree.GetInProgressTasks()
-	if len(inProgress) != 2 {
-		t.Fatalf("expected 2 in progress tasks, got %d", len(inProgress))
+	if len(inProgress) != 3 {
+		t.Fatalf("expected 3 in progress tasks (including the derived parent), got %d", len(inProgress))
 	}
 
 	foundSubtask := false

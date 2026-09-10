@@ -216,3 +216,9 @@ HalpTask provides two seamless ways to tune settings:
 
 ### External Editor Harmony (`<space> c e`)
 Press `<space> c e` to launch your system `$EDITOR` (Neovim, Vim, Nano) directly on `~/.config/halptask/config.yaml`. When you save and exit your editor, HalpTask automatically reloads the updated configuration without restarting!
+
+### Parent task status
+
+A task with subtasks automatically reflects their status: all Todo means Todo, all Done means Done, and any In Progress or mix of Todo and Done means In Progress. Tasks nested under plain bullets also contribute; bullets themselves do not count. Folding does not affect this calculation.
+
+Using a status shortcut on a parent task (including in the Agenda) opens a warning before changing all descendant tasks to the requested status. Press `y` to confirm, or `n` / `Esc` to cancel. The group change can be undone in one step. Tasks without subtasks retain their usual status controls.
