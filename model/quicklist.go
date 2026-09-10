@@ -135,9 +135,12 @@ func ParseDueDate(dateStr string, now time.Time) (time.Time, bool) {
 
 // ExtractDueDate extracts due date keywords from text and returns clean title and parsed date.
 func ExtractDueDate(text string) (cleanTitle string, rawDue string, dueDate time.Time, hasDue bool) {
+	return extractDueDateAt(text, time.Now())
+}
+
+func extractDueDateAt(text string, now time.Time) (cleanTitle string, rawDue string, dueDate time.Time, hasDue bool) {
 	words := strings.Fields(text)
 	var titleWords []string
-	now := time.Now()
 
 	for _, w := range words {
 		lowerW := strings.ToLower(w)
@@ -191,7 +194,7 @@ func EvaluateTreeTasks(tree *Tree, now time.Time) []EvaluatedTask {
 					dueDate = time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, parsed.Location())
 				} else {
 					var extDue time.Time
-					cleanTitle, rawDue, extDue, hasDue = ExtractDueDate(item.Text)
+					cleanTitle, rawDue, extDue, hasDue = extractDueDateAt(item.Text, now)
 					if hasDue {
 						dueDate = extDue
 					}
@@ -237,29 +240,9 @@ func EvaluateTreeTasks(tree *Tree, now time.Time) []EvaluatedTask {
 
 // RunQuickList outputs formatted task listings or status tallies to the provided writer.
 func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) error {
-	targetFilePath := opts.FilePath
-	if targetFilePath == "" {
-		if cfg != nil && cfg.DataFile != "" {
-			targetFilePath = cfg.DataFile
-		} else {
-			targetFilePath = config.DefaultConfig().DataFile
-		}
-	}
-
-	isEncrypted := opts.Encrypt || (cfg != nil && cfg.Encrypted)
-	passphrase := opts.Passphrase
-	if passphrase == "" {
-		var err error
-		passphrase, err = ResolvePassphrase(targetFilePath, isEncrypted, os.Stdin, os.Stderr)
-		if err != nil {
-			return err
-		}
-	}
-
-	storage := NewStorage(targetFilePath, isEncrypted)
-	tree, err := storage.Load(passphrase)
+	storage, tree, _, err := loadHeadlessStorage(cfg, opts.FilePath, opts.Encrypt, opts.Passphrase)
 	if err != nil {
-		return fmt.Errorf("failed to load data file %s: %w", targetFilePath, err)
+		return err
 	}
 
 	now := time.Now()
@@ -291,7 +274,7 @@ func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) erro
 				filtered = append(filtered, task)
 			}
 		} else if opts.Today {
-			if task.Item.Status == StatusInProgress || task.DueStatus == "today" || task.DueStatus == "overdue" {
+			if task.Item.Status != StatusDone && (task.Item.Status == StatusInProgress || task.DueStatus == "today" || task.DueStatus == "overdue") {
 				filtered = append(filtered, task)
 			}
 		} else {
@@ -354,7 +337,7 @@ func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) erro
 	}
 	useColor := isTTY && !opts.NoColor
 
-	renderListing(out, filtered, targetFilePath, opts, useColor, todoCount, inProgressCount, overdueCount)
+	renderListing(out, filtered, storage.FilePath, opts, useColor, todoCount, inProgressCount, overdueCount)
 	return nil
 }
 
@@ -421,7 +404,7 @@ func renderListing(out io.Writer, tasks []EvaluatedTask, filePath string, opts Q
 			}
 		}
 
-		idStr := fmt.Sprintf("#%s", task.Item.ID)
+		idStr := fmt.Sprintf("%-4s", "#"+task.Item.ID)
 		if useColor {
 			idStr = dimStyle.Render(idStr)
 		}
@@ -468,7 +451,7 @@ func renderListing(out io.Writer, tasks []EvaluatedTask, filePath string, opts Q
 			}
 		}
 
-		line := fmt.Sprintf("  %s %-4s %s", statusMarker, idStr, textStr)
+		line := fmt.Sprintf("  %s %s %s", statusMarker, idStr, textStr)
 		if len(tagParts) > 0 {
 			line += " " + strings.Join(tagParts, " ")
 		}

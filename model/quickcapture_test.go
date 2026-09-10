@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -241,5 +243,57 @@ func TestRunQuickCapture(t *testing.T) {
 	encInbox := FindOrCreateInbox(encTree, "Inbox")
 	if len(encInbox.Children) != 1 || !strings.Contains(encInbox.Children[0].Text, "Confidential security key rotation") {
 		t.Errorf("unexpected encrypted inbox content")
+	}
+}
+
+func TestHeadlessLegacyStorage(t *testing.T) {
+	for _, encrypted := range []bool{false, true} {
+		t.Run(fmt.Sprint(encrypted), func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "data.txt")
+			content := "- Inbox #inbox\n  - [ ] Existing\n"
+			pass := ""
+			if encrypted {
+				pass = "secret"
+				var err error
+				content, err = encryptContent(content, pass)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := os.WriteFile(path, []byte(content), 0600); err != nil {
+				t.Fatal(err)
+			}
+			var out bytes.Buffer
+			if err := RunQuickList(nil, QuickListOptions{FilePath: path, Passphrase: pass, CountOnly: true}, &out); err != nil {
+				t.Fatal(err)
+			}
+			unchanged, err := os.ReadFile(path)
+			if err != nil || string(unchanged) != content {
+				t.Fatal("query mutated legacy file", err)
+			}
+			for i := 0; i < 2; i++ {
+				item, _, err := RunQuickCapture(nil, QuickCaptureOptions{FilePath: path, Passphrase: pass, RawText: "New @due(2026-09-15)"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if item.Parent == nil || item.DueDate == 0 || item.Text != "New" {
+					t.Fatalf("bad capture: %+v", item)
+				}
+			}
+			out.Reset()
+			if err := RunQuickList(nil, QuickListOptions{FilePath: path, Passphrase: pass, CountOnly: true}, &out); err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(out.String(), "3 todo") {
+				t.Fatal(out.String())
+			}
+			if _, err := os.Stat(path + ".bak"); !os.IsNotExist(err) {
+				t.Fatal("unexpected migration backup")
+			}
+			isEnc, err := IsEncryptedFile(path)
+			if err != nil || isEnc != encrypted {
+				t.Fatal("encryption changed", err)
+			}
+		})
 	}
 }

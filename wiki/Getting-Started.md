@@ -133,3 +133,7 @@ Follow these steps to master the basics:
 - Explore specialized workflows in [User Personas & Workflows](User-Personas-&-Workflows).
 - Discover Vim shortcuts and efficiency secrets in the [Power User Guide](Power-User-Guide).
 - Learn how to secure your notes with AES-256 in [Configuration & Security](Configuration-&-Encryption-Security).
+
+### Capture from your shell
+
+Run `halptask add "First task #work due:tomorrow"` to create a task in Inbox without opening the TUI, then `halptask list --count` to check active task totals. A fresh file contains only your captured tasks. Use `halptask add "Reference note" --bullet` for a non-task item. See the [Power User Guide](Power-User-Guide.md) for status bar integrations and filters.

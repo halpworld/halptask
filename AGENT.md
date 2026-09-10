@@ -167,3 +167,7 @@ go fmt ./...
    - Maintain image assets in `wiki/images/` and `docs/images/` to ensure visual screenshots match current application design.
 7. **Verification Step**:
    Before declaring a task resolved, ALWAYS run `go test ./...` and `go build -o halptask .` to ensure zero compilation or runtime regression errors.
+
+### Headless CLI storage
+
+`model/headless.go` loads existing data without the TUI's demo seeding or file migration. Quick capture preserves detected encryption and saves at the selected path; queries never rewrite the data file. Keep subprocess coverage in `main_test.go` for aliases, exit codes, piped output, and encrypted append behavior.

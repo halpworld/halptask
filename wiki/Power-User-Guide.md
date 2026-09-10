@@ -139,6 +139,10 @@ halptask add "Deploy hotfix" --top
 halptask add "System architecture note" --bullet
 ```
 
+`list --today` includes active tasks due today, overdue, or in progress, and excludes completed tasks. `list --all --json` includes completed tasks. `--count` summarizes the entire file (overdue overlaps todo/in-progress); do not combine it with `--json`. Piped output is free of ANSI formatting.
+
+Capture defaults to tasks; `--task` and `--bullet` cannot be combined. To supply a Markdown status prefix, use `halptask add --tag ops -- "- [~] Investigate timeout"`. Use `--inbox Work` to target a different root section. Both `due:tomorrow` and `@due(2026-09-15)` are supported.
+
 ### Tmux Statusline Integration (`~/.tmux.conf`)
 Display your live pending and in-progress task counts directly in your tmux status bar:
 

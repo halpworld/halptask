@@ -106,6 +106,7 @@ func handleAddSubcommand(args []string, cfg *config.Config) {
 	fs.BoolVarP(&help, "help", "h", false, "Show add command help")
 
 	if err := fs.Parse(args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(2)
 	}
 
@@ -181,6 +182,7 @@ func handleListSubcommand(args []string, cfg *config.Config) {
 	fs.BoolVarP(&help, "help", "h", false, "Show list command help")
 
 	if err := fs.Parse(args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(2)
 	}
 
@@ -203,6 +205,15 @@ Flags:
   -h, --help           Show help
 `)
 		os.Exit(0)
+	}
+
+	if fs.NArg() != 0 {
+		fmt.Fprintln(os.Stderr, "Error: list does not accept positional arguments")
+		os.Exit(2)
+	}
+	if countOnly && jsonOutput {
+		fmt.Fprintln(os.Stderr, "Error: --count and --json cannot be combined")
+		os.Exit(2)
 	}
 
 	opts := model.QuickListOptions{
