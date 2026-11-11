@@ -1,0 +1,64 @@
+# The desktop shell. Its own workspace (not a member of hub/Cargo.toml) so the
+# core crates build and test without Tauri's dependency tree; it links the
+# core in-process through path dependencies.
+[workspace]
+
+[package]
+name = "halptask-hub"
+description = "HalpTask Hub desktop shell (Tauri v2): one dispatch command, change events, tray and quick capture."
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[lib]
+name = "halptask_hub_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+halp-core = { path = "../../crates/halp-core" }
+halp-store = { path = "../../crates/halp-store" }
+# The MCP host agents connect to (same in-process core).
+halp-mcp = { path = "../../crates/halp-mcp" }
+# Integrations (GitHub, MCP servers, git) in the same process.
+halp-integrations = { path = "../../crates/halp-integrations" }
+# Tier B (src/ext/transform.rs): the wasm transform host. Only the shell
+# links it (and so wasmtime); the core, halpd and the MCP host do not.
+halp-ext = { path = "../../crates/halp-ext" }
+url = "2"
+tauri = { version = "2.12", features = ["tray-icon"] }
+tauri-plugin-window-state = "2.5"
+tauri-plugin-single-instance = "2.5"
+tauri-plugin-global-shortcut = "2.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", default-features = false, features = ["sync"] }
+zeroize = "1"
+directories = "6"
+# Tier C (src/ext): re-hash served widget files, one-time frame tickets.
+sha2 = "0.11"
+hex = "0.4"
+getrandom = "0.3"
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "deny"
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

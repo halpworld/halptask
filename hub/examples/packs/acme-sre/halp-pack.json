@@ -1,0 +1,129 @@
+{
+  "description": "Example pack: an on-call role that extends the developer role with an incident task type, a computed open-incident metric (a sandboxed WebAssembly transform) and a sandboxed on-call widget.",
+  "extends": {
+    "id": "halp.developer",
+    "version": "^0.1"
+  },
+  "files": {
+    "prompts/oncall-handoff.md": {
+      "sha256": "b70d0014f4eaf933f382f80fc7a3bcb04d4a3b38610d70c6a985bc7963947dac",
+      "size": 517
+    },
+    "readme.md": {
+      "sha256": "86cbb0d74554574e458a36ec3b3ac988ae0a35f76bc70a725860e633f9c6c33f",
+      "size": 4832
+    },
+    "ui/oncall/index.html": {
+      "sha256": "331b62bde05c2f86a60c2d84b502c964d0d33ba77e22dc3789bc8dd6c3a8a7f5",
+      "size": 1080
+    },
+    "ui/oncall/oncall.js": {
+      "sha256": "3f6dcb1e458db6838b8a86e66e0fe8b2b12e3b682182847b84aafe8f32bf0f3c",
+      "size": 3057
+    },
+    "wasm/burn.wasm": {
+      "sha256": "eab200d9c7e53573e4367aa87fde428923d227087a9f2cfa797a4c0164e80d5d",
+      "size": 666
+    },
+    "wasm/burn.wat": {
+      "sha256": "281c836707f2d3ccb09e6ac8734c9d6bcd1ae21d042d50835c44703e5730870c",
+      "size": 4444
+    }
+  },
+  "format": 1,
+  "id": "acme.platform-sre",
+  "license": "MIT",
+  "min_hub": "0.x",
+  "modules": [
+    {
+      "inputs": {
+        "open": {
+          "args": {
+            "status": [
+              "todo",
+              "in_progress"
+            ],
+            "type_id": "acme.incident"
+          },
+          "command": "tasks.list"
+        }
+      },
+      "name": "burn",
+      "output_schema": {
+        "properties": {
+          "hint": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "wasm": "wasm/burn.wasm"
+    }
+  ],
+  "prompts": {
+    "add": [
+      "prompts/oncall-handoff.md"
+    ]
+  },
+  "publisher": {
+    "name": "Acme Platform SRE (example)"
+  },
+  "role": {
+    "accent": "#b4452f",
+    "id": "acme-platform-sre",
+    "title": "Platform SRE"
+  },
+  "task_types": [
+    {
+      "id": "acme.incident",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "service": {
+            "maxLength": 80,
+            "type": "string"
+          },
+          "sev": {
+            "description": "Severity, 1 is the worst.",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "title": "Incident"
+    }
+  ],
+  "title": "Acme Platform SRE",
+  "ui_widgets": [
+    {
+      "calls": [
+        "tasks_list"
+      ],
+      "entry": "index.html",
+      "name": "oncall",
+      "root": "ui/oncall",
+      "title": "On-call"
+    }
+  ],
+  "version": "0.1.0",
+  "widgets": {
+    "add": [
+      "computed",
+      "x.acme.platform-sre.oncall"
+    ]
+  }
+}

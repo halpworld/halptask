@@ -1,0 +1,5 @@
+{"total_count": 1, "incomplete_results": false, "items": [
+  {"number": 12, "title": "Add retries to the uploader", "html_url": "https://github.com/acme/api/pull/12",
+   "repository_url": "https://api.github.com/repos/acme/api", "pull_request": {"url": "https://api.github.com/repos/acme/api/pulls/12"},
+   "user": {"login": "bob"}, "updated_at": "2026-11-09T15:00:00Z"}
+]}

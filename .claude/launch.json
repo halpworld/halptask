@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "hub-app", "runtimeExecutable": "pnpm", "runtimeArgs": ["--dir", "hub/app", "dev"], "port": 1420 }
+  ]
+}

@@ -1,0 +1,82 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/halp-domain",
+    "crates/halp-store",
+    "crates/halp-policy",
+    "crates/halp-core",
+    "crates/halp-mcp",
+    "crates/halp-integrations",
+    "crates/halp-ext",
+    "crates/halp-pack",
+    "crates/halpd",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[workspace.dependencies]
+halp-domain = { path = "crates/halp-domain" }
+halp-store = { path = "crates/halp-store" }
+halp-policy = { path = "crates/halp-policy" }
+halp-core = { path = "crates/halp-core" }
+halp-mcp = { path = "crates/halp-mcp" }
+halp-integrations = { path = "crates/halp-integrations" }
+halp-pack = { path = "crates/halp-pack" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ulid = "3"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+jsonschema = { version = "0.61", default-features = false }
+schemars = { version = "1", features = ["chrono04"] }
+regex = "1"
+thiserror = "2"
+rusqlite = { version = "0.41", features = ["bundled-sqlcipher-vendored-openssl"] }
+keyring = "4"
+argon2 = "0.6"
+aes-gcm = "0.11"
+pbkdf2 = "0.13"
+sha2 = "0.11"
+base64 = "0.23"
+hex = "0.4"
+# Pack signing (Ed25519) and pack versions; both already in the lock.
+ring = "0.17"
+semver = "1"
+getrandom = "0.4"
+zeroize = { version = "1", features = ["derive"] }
+directories = "6"
+tokio = { version = "1", default-features = false, features = ["sync"] }
+tempfile = "3"
+# MCP server SDK. Pinned exactly: the 2026-07-28 protocol surface is new and
+# moves between minor releases.
+rmcp = { version = "=3.9.0", default-features = false, features = ["server"] }
+tokio-util = { version = "0.7", default-features = false }
+# Integrations: HTTPS with rustls (no OpenSSL), no default features.
+reqwest = { version = "0.13", default-features = false, features = ["rustls", "system-proxy"] }
+url = { version = "2", features = ["serde"] }
+wiremock = "0.6"
+# Calendar (ICS) feeds: parser + RRULE expansion + IANA time zones.
+icalendar = { version = "0.17.17", default-features = false, features = ["parser", "chrono-tz", "recurrence"] }
+rrule = "0.14"
+chrono-tz = "0.10"
+# Energy (MQTT site meters): only the MQTT 3.1.1 packet codec of rumqttc,
+# without its TLS stack (which pins an old rustls-webpki with open
+# advisories); the connection and TLS (tokio-rustls, the platform
+# verifier, the same rustls reqwest uses) are ours.
+rumqttc = { version = "0.25.1", default-features = false }
+bytes = "1"
+rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "aws_lc_rs"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["tls12", "aws_lc_rs"] }
+rustls-platform-verifier = "0.7"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+
+[profile.dev.package."*"]
+opt-level = 2

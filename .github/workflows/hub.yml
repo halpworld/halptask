@@ -1,0 +1,179 @@
+name: hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "hub/**"
+      - ".github/workflows/hub.yml"
+  pull_request:
+    paths:
+      - "hub/**"
+      - ".github/workflows/hub.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hub-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUST_TOOLCHAIN: "1.99.1"
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  rust:
+    name: rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: hub
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rustfmt,clippy
+          rustup default "$RUST_TOOLCHAIN"
+          rustc --version
+          cargo --version
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: hub
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hub
+        shell: bash
+    env:
+      CARGO_AUDIT_VERSION: "0.23.0"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup default "$RUST_TOOLCHAIN"
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --version "=$CARGO_AUDIT_VERSION" --locked
+
+      # Fails on vulnerabilities. "Unmaintained" notices (today zbus_names,
+      # zvariant and zvariant_derive, pulled in on Linux by keyring's
+      # Secret Service store via halp-store) are printed but do not fail the
+      # build.
+      - name: Audit Cargo.lock
+        run: cargo audit
+
+  # The desktop app: the Svelte frontend and the Tauri shell (its own Cargo
+  # workspace under app/src-tauri).
+  app:
+    name: app (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: hub/app
+        shell: bash
+    env:
+      CARGO_AUDIT_VERSION: "0.23.0"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          version: 10
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: hub/app/pnpm-lock.yaml
+
+      - name: Install Linux system libraries (WebKitGTK, tray, SVG)
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            libsoup-3.0-dev libjavascriptcoregtk-4.1-dev patchelf
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy
+          rustup default "$RUST_TOOLCHAIN"
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: hub/app/src-tauri
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Frontend tests
+        run: pnpm test
+
+      - name: Frontend build
+        run: pnpm build
+
+      - name: Audit npm dependencies
+        run: pnpm audit --audit-level high
+
+      - name: Clippy (Tauri shell)
+        working-directory: hub/app/src-tauri
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test (Tauri shell)
+        working-directory: hub/app/src-tauri
+        run: cargo test --locked
+
+      # The command list the shell actually registers, checked against the
+      # frontend's contract test (not only the checked-in fixture).
+      - name: Contract test against the live command list
+        if: runner.os != 'Windows' # the test builds a file:// URL from a POSIX path
+        run: |
+          out="$RUNNER_TEMP/commands.json"
+          (cd src-tauri && HALP_COMMANDS_OUT="$out" cargo test --locked -- --ignored dump_commands)
+          HALP_COMMANDS_JSON="$out" pnpm vitest run tests/contract.test.ts
+
+      - name: Install cargo-audit
+        if: runner.os == 'Linux'
+        run: cargo install cargo-audit --version "=$CARGO_AUDIT_VERSION" --locked
+
+      - name: Audit Cargo.lock (Tauri shell)
+        if: runner.os == 'Linux'
+        working-directory: hub/app/src-tauri
+        run: cargo audit
