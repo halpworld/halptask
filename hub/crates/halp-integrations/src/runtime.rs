@@ -81,6 +81,9 @@ struct Slot {
     /// The settings moved to another destination and deleting the old
     /// secret failed; it must be deleted before any use.
     purge: bool,
+    /// Bumped whenever the stored secret changes, so a sync whose keychain
+    /// read raced with that change does not overwrite `has_secret`.
+    secret_seq: u64,
 }
 
 struct Inner {
@@ -188,6 +191,7 @@ impl Runtime {
         if let Some(s) = slots.get_mut(id) {
             s.status.has_secret = true;
             s.purge = false;
+            s.secret_seq += 1;
             s.wake.notify_one();
         }
         Ok(())
@@ -219,6 +223,7 @@ impl Runtime {
         if let Some(s) = self.inner.lock().get_mut(id) {
             s.status.has_secret = false;
             s.purge = false;
+            s.secret_seq += 1;
         }
         Ok(())
     }
@@ -415,11 +420,19 @@ impl Inner {
         self.purge(&cfg.id, generation).await?;
         if conn.needs_token(&cfg.settings) {
             let id = cfg.id.clone();
+            let seq = self.lock().get(&cfg.id).map(|s| s.secret_seq);
             let got = self
                 .blocking(move |s| s.get(&id))
                 .await?
                 .map_err(|_| SyncError::transient("could not read the OS keychain"))?;
-            self.update(&cfg.id, generation, |s| s.has_secret = got.is_some());
+            // A token set or cleared during the read wins over what it saw.
+            if let Some(s) = self
+                .lock()
+                .get_mut(&cfg.id)
+                .filter(|s| s.generation == generation && Some(s.secret_seq) == seq)
+            {
+                s.status.has_secret = got.is_some();
+            }
             let Some(mut t) = got else {
                 return Err(SyncError::Auth(
                     "no token stored; add one in Settings".into(),
@@ -679,6 +692,7 @@ impl Inner {
                         let mut slots = self.lock();
                         slots.get_mut(&id).map(|s| {
                             s.status.has_secret = true;
+                            s.secret_seq += 1;
                             s.wake.clone()
                         })
                     };
@@ -789,7 +803,7 @@ impl IntegrationHost for Runtime {
         };
         let (generation, moved) = {
             let mut slots = inner.lock();
-            let (generation, mut status, moved) = match slots.remove(&cfg.id) {
+            let (generation, mut status, moved, secret_seq) = match slots.remove(&cfg.id) {
                 Some(old) => {
                     old.cancel.cancel();
                     // A token stored for one service never goes to another:
@@ -802,9 +816,14 @@ impl IntegrationHost for Runtime {
                     if moved {
                         st.has_secret = false;
                     }
-                    (old.generation + 1, st, moved)
+                    (
+                        old.generation + 1,
+                        st,
+                        moved,
+                        old.secret_seq + u64::from(moved),
+                    )
                 }
-                None => (1, IntegrationStatus::default(), false),
+                None => (1, IntegrationStatus::default(), false, 0),
             };
             status = IntegrationStatus {
                 state: if cfg.enabled {
@@ -827,6 +846,7 @@ impl IntegrationHost for Runtime {
                     generation,
                     reported: None,
                     purge: false,
+                    secret_seq,
                 },
             );
             (generation, moved)
