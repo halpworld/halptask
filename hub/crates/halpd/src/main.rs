@@ -38,7 +38,9 @@
 //! database passphrase first).
 
 use std::collections::BTreeSet;
-use std::io::{BufRead, BufReader, IsTerminal, Read, Write};
+#[cfg(unix)]
+use std::io::BufReader;
+use std::io::{BufRead, IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::Arc;
@@ -91,6 +93,8 @@ enum Cmd {
     ClientsRevoke(String),
     ConsentList,
     ConsentApprove(String),
+    // The id is only read by the Unix user channel.
+    #[cfg_attr(not(unix), allow(dead_code))]
     ConsentDeny(String),
     Pack(pack::PackCmd),
 }
@@ -475,6 +479,7 @@ impl UserChannel {
     }
 }
 
+#[cfg(unix)]
 fn reply_code(v: &Value) -> ExitCode {
     print_value(v);
     if v["ok"].as_bool() == Some(true) {

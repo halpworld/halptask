@@ -33,6 +33,8 @@ fn clock() -> Arc<FixedClock> {
 
 struct H {
     core: Arc<Core>,
+    // Keeps the database's temp dir alive; only the Unix socket tests read it.
+    #[cfg_attr(not(unix), allow(dead_code))]
     dir: TempDir,
 }
 

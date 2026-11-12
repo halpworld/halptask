@@ -318,9 +318,21 @@ async fn a_hostile_repo_runs_nothing() {
         snap.files
     );
 
-    // Control: plain git on the same repo does run them. The process
-    // filter goes first: a status that gets through refreshes the index,
-    // after which nothing is racy any more.
+    // Control: plain git on the same repo does run them. A status that
+    // gets through refreshes the index, after which nothing is racy any
+    // more; whether a failing process filter stops it depends on the git
+    // version, so make the files racy again before each status.
+    let racy = || {
+        for f in ["a.txt", "p.txt", ".git/index"] {
+            std::fs::File::options()
+                .write(true)
+                .open(repo.join(f))
+                .unwrap()
+                .set_modified(old)
+                .unwrap();
+        }
+    };
+    racy();
     plain_git(
         &repo,
         &[
@@ -333,6 +345,7 @@ async fn a_hostile_repo_runs_nothing() {
             "status",
         ],
     );
+    racy();
     plain_git(
         &repo,
         &[
@@ -343,6 +356,7 @@ async fn a_hostile_repo_runs_nothing() {
             "status",
         ],
     );
+    racy();
     plain_git(
         &repo,
         &[

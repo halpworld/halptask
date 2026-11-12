@@ -13,6 +13,7 @@
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+#[cfg(unix)]
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 
 const USAGE: &str = "usage: halp-mcp [--socket PATH]\n\
@@ -20,6 +21,7 @@ Set HALP_MCP_TOKEN (or HALP_MCP_TOKEN_FILE) to the token from `halpd clients pai
 Tokens are never accepted as arguments.";
 const MAX_TOKEN_BYTES: u64 = 4096;
 /// How long replies may still arrive after stdin closes.
+#[cfg(unix)]
 const EOF_GRACE: std::time::Duration = std::time::Duration::from_secs(2);
 
 fn socket_from_args() -> Result<Option<PathBuf>, String> {
@@ -42,6 +44,7 @@ fn socket_from_args() -> Result<Option<PathBuf>, String> {
     Ok(socket)
 }
 
+#[cfg(unix)]
 fn default_socket() -> Result<PathBuf, String> {
     if let Some(p) = std::env::var_os("HALP_SOCKET") {
         return Ok(PathBuf::from(p));
