@@ -1,0 +1,15 @@
+# HalpTask export
+- Inbox #inbox <!-- id: 1 -->
+  - [ ] Fix login #bug @due(2026-11-13) <!-- id: 2 -->
+  - [x] Write release notes <!-- id: 3 -->
+- Project Atlas #work <!-- fold --> <!-- id: 4 -->
+  - [~] Parent task <!-- id: 5 -->
+    - [x] Sub done <!-- id: 6 -->
+    - [ ] Sub todo #frontend <!-- id: 7 -->
+    - Design notes <!-- id: 8 -->
+      - [~] Nested under bullet @due(2026-12-01) <!-- id: 9 -->
+  - [ ] Ünïcode tâsk 日本語 — “quotes” #intl #i18n <!-- id: 10 -->
+- [x] All done parent <!-- id: 11 -->
+  - [x] a <!-- id: 12 -->
+  - [x] b <!-- id: 13 -->
+- [~] Focused item <!-- focus --> <!-- id: 14 -->

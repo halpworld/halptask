@@ -1,0 +1,256 @@
+{
+  "id": "cso",
+  "title": "Chief sustainability officer",
+  "accent": "#4f7a1f",
+  "widgets": ["deadline-wall", "grid-carbon", "trajectory", "data-chase", "evidence", "board-brief", "reg-radar", "now", "agenda", "task-list", "activity", "quick-capture"],
+  "task_types": [
+    {
+      "id": "cso.data_request",
+      "title": "Data request",
+      "icon": "database",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "One ESG data point asked of an owner or supplier. The carbon platform or ERP stays the system of record; source_ref points there.",
+        "type": "object",
+        "properties": {
+          "supplier": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "owner": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "scope": { "enum": ["scope1", "scope2", "scope3"] },
+          "category": { "type": "integer", "minimum": 1, "maximum": 15 },
+          "metric": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "unit": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "period": { "type": "string", "pattern": "^[0-9]{4}(-(Q[1-4]|H[12]|0[1-9]|1[0-2]))?$", "maxLength": 7 },
+          "due": { "type": "string", "format": "date", "maxLength": 10 },
+          "requested_on": { "type": "string", "format": "date", "maxLength": 10 },
+          "status": { "enum": ["requested", "chased", "received", "validated", "rejected"] },
+          "chase_count": { "type": "integer", "minimum": 0, "maximum": 1000 },
+          "last_chased": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "source_ref": { "type": "string", "minLength": 1, "maxLength": 200 }
+        },
+        "required": ["supplier", "metric", "status"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["supplier", "metric", "period"], "badge_field": "status" }
+    },
+    {
+      "id": "cso.evidence",
+      "title": "Evidence",
+      "icon": "file-check",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "A file that backs a data point, identified by its SHA-256. Once approved it must not change: x-halp-immutable-when asks the core to refuse agent and integration writes to an approved item. The core enforces this: only the user approves, approval cannot be undone, and only appends to the approval chain are allowed afterwards.",
+        "x-halp-immutable-when": { "status": ["approved"] },
+        "type": "object",
+        "properties": {
+          "file_name": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^/\\\\]+$" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "minLength": 64, "maxLength": 64 },
+          "size_bytes": { "type": "integer", "minimum": 0, "maximum": 1000000000000 },
+          "source_system": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "data_point_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$", "minLength": 1, "maxLength": 64 },
+          "data_point": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "status": { "enum": ["draft", "in_review", "approved", "rejected"] },
+          "approvals": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "reviewer": { "type": "string", "minLength": 1, "maxLength": 120 },
+                "decision": { "enum": ["approved", "rejected", "changes_requested"] },
+                "at": { "type": "string", "format": "date-time", "maxLength": 40 },
+                "note": { "type": "string", "maxLength": 500 }
+              },
+              "required": ["reviewer", "decision", "at"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["file_name", "sha256", "status"],
+        "additionalProperties": false,
+        "if": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+        "then": {
+          "required": ["approvals"],
+          "properties": { "approvals": { "contains": { "properties": { "decision": { "const": "approved" } }, "required": ["decision"] } } }
+        }
+      },
+      "display": { "primary_fields": ["file_name", "source_system"], "badge_field": "status" }
+    },
+    {
+      "id": "cso.disclosure",
+      "title": "Disclosure",
+      "icon": "landmark",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "A reporting deadline. regulatory_certainty says whether the date is settled law; anything but confirmed is shown as uncertain.",
+        "type": "object",
+        "properties": {
+          "framework": { "enum": ["csrd_esrs", "sb253", "sb261", "issb", "other"] },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "jurisdiction": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "reporting_period": { "type": "string", "pattern": "^[0-9]{4}(-(Q[1-4]|H[12]|0[1-9]|1[0-2]))?$", "maxLength": 7 },
+          "due": { "type": "string", "format": "date", "maxLength": 10 },
+          "regulatory_certainty": { "enum": ["confirmed", "proposed", "litigated", "delayed"] },
+          "certainty_note": { "type": "string", "maxLength": 500 },
+          "source_url": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+          "owner": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "status": { "enum": ["not_started", "drafting", "in_review", "assured", "filed"] }
+        },
+        "required": ["framework", "due", "regulatory_certainty"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["framework", "jurisdiction", "due"], "badge_field": "regulatory_certainty" }
+    },
+    {
+      "id": "cso.target",
+      "title": "Emissions target",
+      "icon": "trending-down",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "An SBTi-style absolute target. Actuals are reported figures only, each with the source it came from; missing years stay missing.",
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "scope": { "enum": ["scope1", "scope2", "scope1_2", "scope3", "scope1_2_3"] },
+          "unit": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "framework": { "enum": ["sbti_near_term", "sbti_net_zero", "internal", "other"] },
+          "validation": { "enum": ["none", "committed", "validated"] },
+          "base_year": { "type": "integer", "minimum": 1990, "maximum": 2100 },
+          "base_value": { "type": "number", "minimum": 0 },
+          "target_year": { "type": "integer", "minimum": 1990, "maximum": 2100 },
+          "target_value": { "type": "number", "minimum": 0 },
+          "actuals": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": { "type": "integer", "minimum": 1990, "maximum": 2100 },
+                "value": { "type": "number", "minimum": 0 },
+                "source_ref": { "type": "string", "minLength": 1, "maxLength": 200 }
+              },
+              "required": ["year", "value"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["scope", "base_year", "base_value", "target_year", "target_value"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["scope", "target_year"], "badge_field": "validation" }
+    },
+    {
+      "id": "cso.reg_change",
+      "title": "Regulatory change",
+      "icon": "radar",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "jurisdiction": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "instrument": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "stage": { "enum": ["proposed", "consultation", "adopted", "in_force", "delayed", "litigated", "withdrawn"] },
+          "effective_date": { "type": "string", "format": "date", "maxLength": 10 },
+          "impact": { "enum": ["high", "medium", "low"] },
+          "impact_note": { "type": "string", "maxLength": 500 },
+          "source_url": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+          "last_reviewed": { "type": "string", "format": "date", "maxLength": 10 }
+        },
+        "required": ["title", "jurisdiction", "stage", "source_url"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["jurisdiction", "stage", "effective_date"], "badge_field": "impact" }
+    },
+    {
+      "id": "cso.board_brief",
+      "title": "Board brief section",
+      "icon": "presentation",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "One section of the board brief. Pre-disclosure figures: data class cso.unpublished. A section can only be ready or presented when every figure names its source item.",
+        "x-halp-data-class": "cso.unpublished",
+        "type": "object",
+        "properties": {
+          "section": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "meeting_date": { "type": "string", "format": "date", "maxLength": 10 },
+          "status": { "enum": ["draft", "ready", "presented"] },
+          "narrative": { "type": "string", "maxLength": 4000 },
+          "figures": {
+            "type": "array",
+            "maxItems": 40,
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+                "value": { "type": "number" },
+                "unit": { "type": "string", "minLength": 1, "maxLength": 40 },
+                "source_item_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$", "minLength": 1, "maxLength": 64 },
+                "note": { "type": "string", "maxLength": 300 }
+              },
+              "required": ["label", "value", "unit"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["section", "status"],
+        "additionalProperties": false,
+        "if": { "properties": { "status": { "enum": ["ready", "presented"] } }, "required": ["status"] },
+        "then": { "properties": { "figures": { "items": { "required": ["source_item_id"] } } } }
+      },
+      "display": { "primary_fields": ["section", "meeting_date"], "badge_field": "status" }
+    },
+    {
+      "id": "cso.energy_reading",
+      "title": "Energy reading",
+      "icon": "zap",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Latest grid carbon intensity and site power for one zone or meter, written by an integration (Electricity Maps, MQTT). One item per source and zone; series holds recent samples, oldest first.",
+        "type": "object",
+        "properties": {
+          "source": { "enum": ["electricity_maps", "mqtt", "manual"] },
+          "zone": { "type": "string", "pattern": "^[A-Za-z0-9_./:-]+$", "minLength": 1, "maxLength": 64 },
+          "zone_label": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "site": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "gco2_per_kwh": { "type": "number", "minimum": 0, "maximum": 3000 },
+          "power_kw": { "type": "number", "minimum": -1000000, "maximum": 1000000 },
+          "renewable_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+          "estimated": { "type": "boolean", "description": "The source marks the value as estimated (modelled), not measured; absent when it does not say." },
+          "at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "series": {
+            "type": "array",
+            "maxItems": 192,
+            "items": {
+              "type": "object",
+              "properties": {
+                "at": { "type": "string", "format": "date-time", "maxLength": 40 },
+                "gco2_per_kwh": { "type": "number", "minimum": 0, "maximum": 3000 },
+                "power_kw": { "type": "number", "minimum": -1000000, "maximum": 1000000 }
+              },
+              "required": ["at"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["source", "zone", "at"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["zone", "gco2_per_kwh"], "badge_field": "source" }
+    }
+  ],
+  "layout": {
+    "id": "cso-default",
+    "role_id": "cso",
+    "columns": 12,
+    "widgets": [
+      { "id": "deadline-wall", "kind": "deadline-wall", "title": "Disclosure deadlines", "x": 0, "y": 0, "w": 5, "h": 4, "config": { "horizon_days": 800 } },
+      { "id": "grid-carbon", "kind": "grid-carbon", "title": "Grid carbon", "x": 5, "y": 0, "w": 3, "h": 4, "config": { "stale_minutes": 30, "low": 150, "high": 400 } },
+      { "id": "trajectory", "kind": "trajectory", "title": "Trajectory", "x": 8, "y": 0, "w": 4, "h": 4, "config": {} },
+      { "id": "data-chase", "kind": "data-chase", "title": "Data chase", "x": 0, "y": 4, "w": 7, "h": 5, "config": { "chase_after_days": 7 } },
+      { "id": "evidence", "kind": "evidence", "title": "Evidence locker", "x": 7, "y": 4, "w": 5, "h": 5, "config": {} },
+      { "id": "board-brief", "kind": "board-brief", "title": "Board brief", "x": 0, "y": 9, "w": 5, "h": 5, "config": {} },
+      { "id": "reg-radar", "kind": "reg-radar", "title": "Regulatory radar", "x": 5, "y": 9, "w": 4, "h": 5, "config": {} },
+      { "id": "activity", "kind": "activity", "title": "Activity", "x": 9, "y": 9, "w": 3, "h": 5, "config": {} }
+    ]
+  }
+}

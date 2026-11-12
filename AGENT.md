@@ -171,3 +171,9 @@ go fmt ./...
 ### Headless CLI storage
 
 `model/headless.go` loads existing data without the TUI's demo seeding or file migration. Quick capture preserves detected encryption and saves at the selected path; queries never rewrite the data file. Keep subprocess coverage in `main_test.go` for aliases, exit codes, piped output, and encrypted append behavior.
+
+---
+
+## 🦀 HalpTask Hub (Rust, `hub/`)
+
+The Rust + Tauri desktop app has its own agent notes in [`hub/CLAUDE.md`](hub/CLAUDE.md). Read them before building there. In short: both Cargo workspaces share `hub/target`, the dev profiles in `hub/Cargo.toml` and `hub/app/src-tauri/Cargo.toml` must stay identical, and `hub/scripts/trim-target.sh` keeps the build folder under 15 GB.

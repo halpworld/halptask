@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "hub-window",
+  "description": "The Hub's own windows: run core commands as the user and listen for change events. Nothing else (no shell, fs, http, window or webview APIs). Integration tokens are in hub-main.json (main window only).",
+  "windows": ["main", "capture"],
+  "permissions": [
+    "allow-dispatch",
+    "allow-key-status",
+    "allow-unlock",
+    "allow-hide-capture",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "id": "developer",
+  "title": "Developer",
+  "accent": "#3b82f6",
+  "widgets": ["now", "pr-queue", "my-prs", "ci-radar", "context-restore", "focus-protector", "ask-catcher", "day-plan", "agenda", "task-list", "activity", "quick-capture"],
+  "task_types": [
+    {
+      "id": "dev.pull_request",
+      "title": "Pull request",
+      "icon": "git-pull-request",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "maxLength": 200 },
+          "number": { "type": "integer", "minimum": 1, "maximum": 1000000000 },
+          "url": { "type": "string", "format": "uri", "maxLength": 2048 },
+          "state": { "enum": ["draft", "open", "review_requested", "changes_requested", "approved", "merged", "closed"] },
+          "ci": { "enum": ["unknown", "pending", "passing", "failing"] },
+          "author": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "reviewers": { "type": "array", "maxItems": 30, "items": { "type": "string", "minLength": 1, "maxLength": 100 } },
+          "requested_from_me": { "type": "boolean" },
+          "authored_by_me": { "type": "boolean" },
+          "requested_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "updated_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "additions": { "type": "integer", "minimum": 0, "maximum": 100000000 },
+          "deletions": { "type": "integer", "minimum": 0, "maximum": 100000000 },
+          "branch": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "mergeable": { "enum": ["clean", "conflicting", "blocked", "unknown"] }
+        },
+        "required": ["repo", "number"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["repo", "number", "author"], "badge_field": "ci" }
+    },
+    {
+      "id": "dev.ci_run",
+      "title": "CI run",
+      "icon": "radar",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "maxLength": 200 },
+          "branch": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "workflow": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "status": { "enum": ["queued", "running", "passing", "failing", "cancelled"] },
+          "url": { "type": "string", "format": "uri", "maxLength": 2048 },
+          "started_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "finished_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "pr_number": { "type": "integer", "minimum": 1, "maximum": 1000000000 }
+        },
+        "required": ["repo", "branch", "workflow", "status"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["repo", "branch", "workflow"], "badge_field": "status" }
+    },
+    {
+      "id": "dev.ask",
+      "title": "Ask",
+      "icon": "message-circle-question",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "source": { "enum": ["slack", "email", "github", "manual"] },
+          "from": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "channel": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "permalink": { "type": "string", "format": "uri", "maxLength": 2048 },
+          "received_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "reply_by": { "type": "string", "format": "date-time", "maxLength": 40 }
+        },
+        "required": ["source", "from", "received_at"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["from", "source"], "badge_field": "source" }
+    },
+    {
+      "id": "dev.context",
+      "title": "Context snapshot",
+      "icon": "history",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "maxLength": 200 },
+          "branch": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "files": { "type": "array", "maxItems": 100, "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+          "note": { "type": "string", "maxLength": 2000 },
+          "last_command": { "type": "string", "maxLength": 500 },
+          "open_prs": { "type": "array", "maxItems": 20, "items": { "type": "integer", "minimum": 1, "maximum": 1000000000 } },
+          "task_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$", "maxLength": 64 },
+          "captured_at": { "type": "string", "format": "date-time", "maxLength": 40 }
+        },
+        "required": ["repo", "branch", "captured_at"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["repo", "branch"] }
+    },
+    {
+      "id": "dev.meeting",
+      "title": "Meeting",
+      "icon": "calendar-clock",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "starts_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "ends_at": { "type": "string", "format": "date-time", "maxLength": 40 },
+          "location": { "type": "string", "maxLength": 200 },
+          "url": { "type": "string", "format": "uri", "maxLength": 2048 },
+          "busy": { "type": "boolean" }
+        },
+        "required": ["starts_at", "ends_at"],
+        "additionalProperties": false
+      },
+      "display": { "primary_fields": ["starts_at", "location"] }
+    }
+  ],
+  "layout": {
+    "id": "developer-default",
+    "role_id": "developer",
+    "columns": 12,
+    "widgets": [
+      { "id": "now", "kind": "now", "title": "Now", "x": 0, "y": 0, "w": 4, "h": 3, "config": {} },
+      { "id": "pr-queue", "kind": "pr-queue", "title": "Review queue", "x": 4, "y": 0, "w": 5, "h": 4, "config": { "stale_hours": 24 } },
+      { "id": "focus-protector", "kind": "focus-protector", "title": "Deep work", "x": 9, "y": 0, "w": 3, "h": 3, "config": { "minutes": 50 } },
+      { "id": "context-restore", "kind": "context-restore", "title": "Where was I?", "x": 0, "y": 3, "w": 4, "h": 3, "config": {} },
+      { "id": "day-plan", "kind": "day-plan", "title": "Day plan", "x": 9, "y": 3, "w": 3, "h": 7, "config": { "day_start": "09:00", "day_end": "17:30" } },
+      { "id": "my-prs", "kind": "my-prs", "title": "My pull requests", "x": 4, "y": 4, "w": 5, "h": 3, "config": {} },
+      { "id": "ask-catcher", "kind": "ask-catcher", "title": "Asks", "x": 0, "y": 6, "w": 4, "h": 4, "config": {} },
+      { "id": "ci-radar", "kind": "ci-radar", "title": "CI radar", "x": 4, "y": 7, "w": 5, "h": 3, "config": {} }
+    ]
+  }
+}

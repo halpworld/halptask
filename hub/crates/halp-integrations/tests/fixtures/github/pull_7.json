@@ -1,0 +1,4 @@
+{"number": 7, "title": "Bump \u001b[31mdeps\u202e", "html_url": "https://github.com/acme/web/pull/7",
+ "user": {"login": "me"}, "draft": false, "updated_at": "2026-11-08T10:00:00Z",
+ "head": {"ref": "deps", "sha": "bbb222"}, "additions": 3, "deletions": 3, "mergeable_state": "clean",
+ "requested_reviewers": []}

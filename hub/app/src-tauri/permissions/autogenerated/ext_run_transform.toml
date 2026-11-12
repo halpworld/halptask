@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-run-transform"
+description = "Enables the ext_run_transform command without any pre-configured scope."
+commands.allow = ["ext_run_transform"]
+
+[[permission]]
+identifier = "deny-ext-run-transform"
+description = "Denies the ext_run_transform command without any pre-configured scope."
+commands.deny = ["ext_run_transform"]

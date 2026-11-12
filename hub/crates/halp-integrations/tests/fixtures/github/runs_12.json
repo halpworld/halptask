@@ -1,0 +1,8 @@
+{"total_count": 3, "workflow_runs": [
+  {"id": 1, "workflow_id": 500, "run_number": 1, "name": "CI", "head_branch": "retries", "status": "completed", "conclusion": "failure",
+   "html_url": "https://github.com/acme/api/actions/runs/1", "run_started_at": "2026-11-09T14:00:00Z", "updated_at": "2026-11-09T14:05:00Z"},
+  {"id": 2, "workflow_id": 500, "run_number": 2, "name": "CI", "head_branch": "retries", "status": "in_progress", "conclusion": null,
+   "html_url": "https://github.com/acme/api/actions/runs/2", "run_started_at": "2026-11-09T15:01:00Z", "updated_at": "2026-11-09T15:02:00Z"},
+  {"id": 3, "workflow_id": 501, "run_number": 9, "name": "Lint", "head_branch": "retries", "status": "completed", "conclusion": "success",
+   "html_url": "https://github.com/acme/api/actions/runs/3", "run_started_at": "2026-11-09T15:01:00Z", "updated_at": "2026-11-09T15:03:00Z"}
+]}

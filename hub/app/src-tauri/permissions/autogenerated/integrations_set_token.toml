@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-integrations-set-token"
+description = "Enables the integrations_set_token command without any pre-configured scope."
+commands.allow = ["integrations_set_token"]
+
+[[permission]]
+identifier = "deny-integrations-set-token"
+description = "Denies the integrations_set_token command without any pre-configured scope."
+commands.deny = ["integrations_set_token"]
