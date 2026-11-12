@@ -10,6 +10,9 @@ on:
     paths:
       - "hub/**"
       - ".github/workflows/hub.yml"
+  # Run by hand ("Run workflow" in the Actions tab) for the full Windows
+  # suite on a branch before merging.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,6 +25,14 @@ env:
   RUST_TOOLCHAIN: "1.99.1"
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
+  # No debug info in CI: faster compiles and links and a smaller cache.
+  # Panics still name the test and message; rerun locally for file:line.
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  # Windows is the slowest runner (20-30 min for a full Rust test build).
+  # On pull requests it runs format, clippy and the frontend tests, which
+  # catch Windows-only compile and lint problems; the Rust test runs on
+  # Windows happen on pushes to main and on manual runs.
+  FULL_WINDOWS: ${{ github.event_name != 'pull_request' }}
 
 jobs:
   rust:
@@ -65,6 +76,7 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Test
+        if: runner.os != 'Windows' || env.FULL_WINDOWS == 'true'
         run: cargo test --workspace --locked
 
   audit:
@@ -173,13 +185,15 @@ jobs:
         run: cargo clippy --all-targets --locked -- -D warnings
 
       - name: Test (Tauri shell)
+        if: runner.os != 'Windows' || env.FULL_WINDOWS == 'true'
         working-directory: hub/app/src-tauri
         run: cargo test --locked
 
       # The command list the shell actually registers, checked against the
       # frontend's contract test (not only the checked-in fixture).
       - name: Contract test against the live command list
-        if: runner.os != 'Windows' # the test builds a file:// URL from a POSIX path
+        # Linux and macOS cover this; on Windows it adds another test build.
+        if: runner.os != 'Windows'
         run: |
           out="$RUNNER_TEMP/commands.json"
           (cd src-tauri && HALP_COMMANDS_OUT="$out" cargo test --locked -- --ignored dump_commands)
