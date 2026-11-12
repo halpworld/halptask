@@ -97,7 +97,7 @@ func (m *AgendaModal) RebuildEntries() {
 					InheritedTags: allTags,
 				}
 
-				if it.Status == model.StatusDone {
+				if it.EffectiveStatus() == model.StatusDone {
 					entry.Section = SectionCompleted
 					completed = append(completed, entry)
 				} else if daysDiff < 0 {
@@ -346,7 +346,7 @@ func (m *AgendaModal) Render() string {
 
 			// Status box
 			var statusBox string
-			switch it.Status {
+			switch it.EffectiveStatus() {
 			case model.StatusDone:
 				statusBox = doneBoxStyle.Render("[x] ")
 			case model.StatusInProgress:
@@ -356,7 +356,7 @@ func (m *AgendaModal) Render() string {
 			}
 
 			// Due badge
-			badge, cat := model.FormatDueBadge(it.DueDate, it.Status == model.StatusDone, now)
+			badge, cat := model.FormatDueBadge(it.DueDate, it.EffectiveStatus() == model.StatusDone, now)
 			var badgeStr string
 			switch cat {
 			case "overdue":
@@ -372,7 +372,7 @@ func (m *AgendaModal) Render() string {
 			// Item Text & ID
 			idStr := lipgloss.NewStyle().Foreground(lipgloss.Color("#565f89")).Faint(true).Render(fmt.Sprintf("#%s ", it.ID))
 			taskText := it.Text
-			if it.Status == model.StatusDone {
+			if it.EffectiveStatus() == model.StatusDone {
 				taskText = lipgloss.NewStyle().Strikethrough(true).Foreground(lipgloss.Color("#565f89")).Render(taskText)
 			} else {
 				taskText = lipgloss.NewStyle().Foreground(lipgloss.Color("#c0caf5")).Render(taskText)

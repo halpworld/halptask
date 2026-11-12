@@ -68,6 +68,9 @@ func doUpdateCmd(rel *updater.ReleaseInfo) tea.Cmd {
 }
 
 type AppModel struct {
+	PendingStatusID string
+	PendingStatus   model.TaskStatus
+
 	Config    *config.Config
 	Storage   *model.Storage
 	Tree      *model.Tree
@@ -489,6 +492,9 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newModel = m
 
 	case tea.KeyMsg:
+		if m.PendingStatusID != "" && msg.String() != "ctrl+c" {
+			return m.updateStatusConfirmation(msg)
+		}
 		if IsTerminalEscapeResponseMsg(msg) {
 			return m, nil
 		}
@@ -1034,8 +1040,7 @@ func (m AppModel) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.KeyBuffer = ""
 	case "t":
 		if m.SelectedID != "" {
-			m.pushUndo()
-			m.Tree.CycleStatus(m.SelectedID)
+			m.requestStatus(m.SelectedID, model.StatusNone)
 			m.ensureValidCursor()
 		}
 		m.KeyBuffer = ""
@@ -1271,31 +1276,33 @@ func (m *AppModel) tryExecuteKeyBinding(keys []string) (bool, tea.Cmd) {
 		}
 	case "  t c": // Cycle task status
 		if m.SelectedID != "" {
-			m.pushUndo()
-			m.Tree.CycleStatus(m.SelectedID)
+			m.requestStatus(m.SelectedID, model.StatusNone)
 			m.ensureValidCursor()
 			return true, nil
 		}
 	case "  t d": // Mark Done [x]
 		if m.SelectedID != "" {
-			m.pushUndo()
-			m.Tree.SetStatus(m.SelectedID, model.StatusDone)
+			if m.requestStatus(m.SelectedID, model.StatusDone) {
+				return true, nil
+			}
 			m.ensureValidCursor()
 			m.StatusMsg = "Marked done [x]"
 			return true, nil
 		}
 	case "  t p": // Mark In Progress [~]
 		if m.SelectedID != "" {
-			m.pushUndo()
-			m.Tree.SetStatus(m.SelectedID, model.StatusInProgress)
+			if m.requestStatus(m.SelectedID, model.StatusInProgress) {
+				return true, nil
+			}
 			m.ensureValidCursor()
 			m.StatusMsg = "Marked in-progress [~]"
 			return true, nil
 		}
 	case "  t s": // Mark Todo [ ]
 		if m.SelectedID != "" {
-			m.pushUndo()
-			m.Tree.SetStatus(m.SelectedID, model.StatusTodo)
+			if m.requestStatus(m.SelectedID, model.StatusTodo) {
+				return true, nil
+			}
 			m.ensureValidCursor()
 			m.StatusMsg = "Marked todo [ ]"
 			return true, nil
@@ -1902,8 +1909,9 @@ func (m AppModel) updateAgenda(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "t", "x", " ":
 		selected := m.AgendaModal.SelectedItem()
 		if selected != nil {
-			m.pushUndo()
-			m.Tree.CycleStatus(selected.ID)
+			if m.requestStatus(selected.ID, model.StatusNone) {
+				return m, nil
+			}
 			m.PendingAutoSave = true
 			_ = m.saveFile()
 			m.AgendaModal.RebuildEntries()
@@ -2074,7 +2082,7 @@ func (m AppModel) renderFocusBanner() string {
 
 	statusBox := ""
 	if focusedItem.IsTask {
-		switch focusedItem.Status {
+		switch focusedItem.EffectiveStatus() {
 		case model.StatusDone:
 			statusBox = lipgloss.NewStyle().Foreground(lipgloss.Color("#9ece6a")).Bold(true).Render(" [x]")
 		case model.StatusInProgress:
@@ -2143,6 +2151,9 @@ func (m AppModel) renderFocusBanner() string {
 }
 
 func (m AppModel) View() string {
+	if m.PendingStatusID != "" {
+		return fmt.Sprintf("Warning: set ALL subtasks of #%s to %s?\nThis changes the entire task group.\n\ny: confirm • n / Esc: cancel", m.PendingStatusID, m.PendingStatus)
+	}
 	if m.Width == 0 || m.Height == 0 {
 		return "Loading HalpTask..."
 	}
@@ -2382,4 +2393,58 @@ func (m AppModel) View() string {
 	viewParts = append(viewParts, statusBarStr)
 
 	return strings.Join(viewParts, "\n")
+}
+
+// requestStatus returns true when a bulk change is awaiting confirmation.
+func (m *AppModel) requestStatus(id string, status model.TaskStatus) bool {
+	item := m.Tree.FindItem(id)
+	if item == nil {
+		return false
+	}
+	if item.IsTask && item.HasSubtasks() {
+		if status == model.StatusNone {
+			switch item.EffectiveStatus() {
+			case model.StatusTodo:
+				status = model.StatusInProgress
+			case model.StatusInProgress:
+				status = model.StatusDone
+			default:
+				status = model.StatusTodo
+			}
+		}
+		m.PendingStatusID, m.PendingStatus = id, status
+		return true
+	}
+	m.pushUndo()
+	if status == model.StatusNone {
+		m.Tree.CycleStatus(id)
+	} else {
+		m.Tree.SetStatus(id, status)
+	}
+	return false
+}
+
+func (m AppModel) updateStatusConfirmation(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "y", "Y":
+		m.pushUndo()
+		m.Tree.SetSubtreeStatus(m.PendingStatusID, m.PendingStatus)
+		m.ensureValidCursor()
+		if m.AgendaModal != nil {
+			m.AgendaModal.RebuildEntries()
+		}
+		m.PendingAutoSave = false
+		if m.Mode == ModeAgenda {
+			_ = m.saveFile()
+		} else {
+			m.autoSave()
+		}
+	case "n", "N", "esc":
+		m.StatusMsg = "Group status change cancelled"
+	default:
+		return m, nil
+	}
+	m.PendingStatusID = ""
+	m.PendingStatus = model.StatusNone
+	return m, nil
 }

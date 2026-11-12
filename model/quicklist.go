@@ -203,7 +203,7 @@ func EvaluateTreeTasks(tree *Tree, now time.Time) []EvaluatedTask {
 				dueStatus := "none"
 				if hasDue {
 					if dueDate.Before(todayMidnight) {
-						if item.Status != StatusDone {
+						if item.EffectiveStatus() != StatusDone {
 							dueStatus = "overdue"
 						} else {
 							dueStatus = "upcoming"
@@ -253,7 +253,7 @@ func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) erro
 	var todoCount, inProgressCount, overdueCount, todayCount, doneCount int
 
 	for _, task := range allTasks {
-		switch task.Item.Status {
+		switch task.Item.EffectiveStatus() {
 		case StatusTodo:
 			todoCount++
 		case StatusInProgress:
@@ -262,24 +262,24 @@ func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) erro
 			doneCount++
 		}
 
-		if task.DueStatus == "overdue" && task.Item.Status != StatusDone {
+		if task.DueStatus == "overdue" && task.Item.EffectiveStatus() != StatusDone {
 			overdueCount++
-		} else if task.DueStatus == "today" && task.Item.Status != StatusDone {
+		} else if task.DueStatus == "today" && task.Item.EffectiveStatus() != StatusDone {
 			todayCount++
 		}
 
 		// Apply filtering predicate
 		if opts.InProgress {
-			if task.Item.Status == StatusInProgress {
+			if task.Item.EffectiveStatus() == StatusInProgress {
 				filtered = append(filtered, task)
 			}
 		} else if opts.Today {
-			if task.Item.Status != StatusDone && (task.Item.Status == StatusInProgress || task.DueStatus == "today" || task.DueStatus == "overdue") {
+			if task.Item.EffectiveStatus() != StatusDone && (task.Item.EffectiveStatus() == StatusInProgress || task.DueStatus == "today" || task.DueStatus == "overdue") {
 				filtered = append(filtered, task)
 			}
 		} else {
 			// Default / --all: include all active tasks (or all tasks)
-			if opts.All || task.Item.Status != StatusDone {
+			if opts.All || task.Item.EffectiveStatus() != StatusDone {
 				filtered = append(filtered, task)
 			}
 		}
@@ -310,7 +310,7 @@ func RunQuickList(cfg *config.Config, opts QuickListOptions, out io.Writer) erro
 			jsonList = append(jsonList, TaskItemJSON{
 				ID:         task.Item.ID,
 				Text:       task.CleanTitle,
-				Status:     task.Item.Status,
+				Status:     task.Item.EffectiveStatus(),
 				IsTask:     task.Item.IsTask,
 				Tags:       task.AllTags,
 				Due:        task.RawDue,
@@ -375,7 +375,7 @@ func renderListing(out io.Writer, tasks []EvaluatedTask, filePath string, opts Q
 
 	for _, task := range tasks {
 		var statusMarker string
-		switch task.Item.Status {
+		switch task.Item.EffectiveStatus() {
 		case StatusDone:
 			if useColor {
 				statusMarker = doneStyle.Render("[x]")
@@ -410,7 +410,7 @@ func renderListing(out io.Writer, tasks []EvaluatedTask, filePath string, opts Q
 		}
 
 		textStr := task.CleanTitle
-		if task.Item.Status == StatusDone && useColor {
+		if task.Item.EffectiveStatus() == StatusDone && useColor {
 			textStr = doneStyle.Render(textStr)
 		}
 

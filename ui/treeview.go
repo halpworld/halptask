@@ -193,7 +193,7 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 		// Status / Checkbox prefix
 		var statusBox string
 		if item.IsTask {
-			switch item.Status {
+			switch item.EffectiveStatus() {
 			case model.StatusDone:
 				statusBox = doneBoxStyle.Render("[x] ")
 			case model.StatusInProgress:
@@ -217,7 +217,7 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 
 		// Text rendering
 		var formattedText string
-		if item.IsTask && item.Status == model.StatusDone {
+		if item.IsTask && item.EffectiveStatus() == model.StatusDone {
 			formattedText = doneTextStyle.Render(item.Text)
 		} else if isFocused {
 			formattedText = focusedTextStyle.Render(item.Text)
@@ -254,7 +254,7 @@ func (tv *TreeView) Render(visible []model.VisibleItem, cursorIndex int, scrollO
 
 		// Due date badge rendering
 		if item.DueDate > 0 {
-			badge, cat := model.FormatDueBadge(item.DueDate, item.Status == model.StatusDone, time.Now())
+			badge, cat := model.FormatDueBadge(item.DueDate, item.EffectiveStatus() == model.StatusDone, time.Now())
 			if badge != "" {
 				var styledBadge string
 				switch cat {

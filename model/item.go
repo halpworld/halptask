@@ -71,6 +71,54 @@ func NewTask(id, text string, status TaskStatus) *Item {
 	}
 }
 
+// HasSubtasks includes tasks nested beneath plain bullet points.
+func (i *Item) HasSubtasks() bool {
+	for _, child := range i.Children {
+		if child.IsTask || child.HasSubtasks() {
+			return true
+		}
+	}
+	return false
+}
+
+// EffectiveStatus derives a parent task's state from its descendant tasks.
+// Mixed todo/done work counts as in progress; bullets do not count as work.
+func (i *Item) EffectiveStatus() TaskStatus {
+	if !i.IsTask {
+		return i.Status
+	}
+	todo, done, active := false, false, false
+	var visit func(*Item)
+	visit = func(node *Item) {
+		if node.IsTask && !node.HasSubtasks() {
+			switch node.Status {
+			case StatusDone:
+				done = true
+			case StatusInProgress:
+				active = true
+			default:
+				todo = true
+			}
+		}
+		for _, child := range node.Children {
+			visit(child)
+		}
+	}
+	for _, child := range i.Children {
+		visit(child)
+	}
+	if active || (todo && done) {
+		return StatusInProgress
+	}
+	if done {
+		return StatusDone
+	}
+	if todo {
+		return StatusTodo
+	}
+	return i.Status
+}
+
 func (i *Item) HasDirectTag(tag string) bool {
 	if i == nil {
 		return false
@@ -118,7 +166,7 @@ func (i *Item) HasDueDate() bool {
 }
 
 func (i *Item) IsOverdue(now time.Time) bool {
-	if !i.HasDueDate() || i.Status == StatusDone {
+	if !i.HasDueDate() || i.EffectiveStatus() == StatusDone {
 		return false
 	}
 	dueDate := time.Unix(i.DueDate, 0).In(now.Location())
@@ -224,7 +272,7 @@ func (i *Item) ToProto() *storagepb.ItemProto {
 		Id:        i.ID,
 		Text:      i.Text,
 		IsTask:    i.IsTask,
-		Status:    TaskStatusToProto(i.Status),
+		Status:    TaskStatusToProto(i.EffectiveStatus()),
 		Folded:    i.Folded,
 		Tags:      append([]string{}, i.Tags...),
 		CreatedAt: i.CreatedAt,

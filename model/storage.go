@@ -405,7 +405,7 @@ func SerializeMarkdown(tree *Tree) string {
 		for _, item := range items {
 			builder.WriteString(indent)
 			if item.IsTask {
-				switch item.Status {
+				switch item.EffectiveStatus() {
 				case StatusDone:
 					builder.WriteString("- [x] ")
 				case StatusInProgress:

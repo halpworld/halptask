@@ -289,3 +289,9 @@ MIT License. Developed with Go & Charm Bubble Tea.
 ## 💡 Acknowledgments
 
 Special thanks to the [LazyVim](https://github.com/LazyVim/LazyVim) project for inspiration.
+
+### Parent task status
+
+A task with subtasks automatically reflects their status: all Todo means Todo, all Done means Done, and any In Progress or mix of Todo and Done means In Progress. Tasks nested under plain bullets also contribute; bullets themselves do not count. Folding does not affect this calculation.
+
+Using a status shortcut on a parent task (including in the Agenda) opens a warning before changing all descendant tasks to the requested status. Press `y` to confirm, or `n` / `Esc` to cancel. The group change can be undone in one step. Tasks without subtasks retain their usual status controls.
