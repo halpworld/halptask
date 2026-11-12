@@ -11,15 +11,16 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CORE_NON_COMMAND_EVENTS, EV, EV_PREFIX } from '../src/lib/api/events';
 import { MockTransport } from '../src/lib/api/mock/mock';
 import type { CommandDescriptor, JsonSchema } from '../src/lib/api/types';
 
-const FIXTURE = process.env.HALP_COMMANDS_JSON ? new URL(`file://${process.env.HALP_COMMANDS_JSON}`) : new URL('../../docs/fixtures/commands.json', import.meta.url);
-const SRC = new URL('../src/', import.meta.url).pathname;
+const FIXTURE = process.env.HALP_COMMANDS_JSON ? pathToFileURL(process.env.HALP_COMMANDS_JSON) : new URL('../../docs/fixtures/commands.json', import.meta.url);
+const SRC = fileURLToPath(new URL('../src/', import.meta.url));
 const present = existsSync(FIXTURE);
-if (!present) console.warn(`contract.test: ${FIXTURE.pathname} not found; skipping (p1-core writes it).`);
+if (!present) console.warn(`contract.test: ${fileURLToPath(FIXTURE)} not found; skipping (p1-core writes it).`);
 
 interface CallSite {
   file: string;

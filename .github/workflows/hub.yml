@@ -47,6 +47,13 @@ jobs:
           rustc --version
           cargo --version
 
+      # openssl-src (vendored by SQLCipher) needs a full Perl to configure
+      # OpenSSL. Git Bash's Perl lacks Locale::Maketext::Simple, so point it
+      # at the Strawberry Perl that ships on the Windows runners.
+      - name: Use Strawberry Perl for OpenSSL (Windows)
+        if: runner.os == 'Windows'
+        run: echo "OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl.exe" >> "$GITHUB_ENV"
+
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: hub
@@ -133,9 +140,18 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component clippy
           rustup default "$RUST_TOOLCHAIN"
 
+      # openssl-src (vendored by SQLCipher) needs a full Perl to configure
+      # OpenSSL. Git Bash's Perl lacks Locale::Maketext::Simple, so point it
+      # at the Strawberry Perl that ships on the Windows runners.
+      - name: Use Strawberry Perl for OpenSSL (Windows)
+        if: runner.os == 'Windows'
+        run: echo "OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl.exe" >> "$GITHUB_ENV"
+
+      # The shell builds into the shared hub/target
+      # (app/src-tauri/.cargo/config.toml), so cache that folder.
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          workspaces: hub/app/src-tauri
+          workspaces: hub/app/src-tauri -> ../../target
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
