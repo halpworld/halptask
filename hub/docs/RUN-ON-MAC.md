@@ -106,7 +106,7 @@ database key in your login keychain. For an app you can put in
 
 ```sh
 pnpm tauri build
-open "src-tauri/target/release/bundle/macos/HalpTask Hub.app"
+open "../target/release/bundle/macos/HalpTask Hub.app"
 ```
 
 The build is not signed with an Apple Developer ID. The first time, open it

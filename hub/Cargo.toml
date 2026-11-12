@@ -78,5 +78,15 @@ unsafe_code = "forbid"
 [workspace.lints.clippy]
 unwrap_used = "deny"
 
+# Keep target/ small. Most of its size is debug info, so dev builds keep only
+# line tables (backtraces and panics still show file:line). For full variable
+# inspection in a debugger, build with CARGO_PROFILE_DEV_DEBUG=true.
+# Keep this section the same in hub/Cargo.toml and app/src-tauri/Cargo.toml:
+# the two share hub/target, and matching settings let them reuse each
+# other's dependency builds.
+[profile.dev]
+debug = "line-tables-only"
+
 [profile.dev.package."*"]
 opt-level = 2
+debug = false

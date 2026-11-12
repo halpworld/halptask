@@ -23,6 +23,17 @@ cargo test --workspace
 
 Rust 1.99, edition 2024. The first build compiles SQLCipher and OpenSSL from source, which needs a C compiler and Perl.
 
+### Disk space
+
+The core workspace and the Tauri shell (`app/src-tauri`) both build into
+`hub/target`, so shared dependencies are compiled once. Dev builds keep only
+line tables for debug info (set `CARGO_PROFILE_DEV_DEBUG=true` for a full
+debugger session). Cargo never removes stale builds, so trim now and then:
+
+```sh
+scripts/trim-target.sh       # drops caches, then everything, if over 15 GB
+```
+
 ## halpd
 
 ```sh
