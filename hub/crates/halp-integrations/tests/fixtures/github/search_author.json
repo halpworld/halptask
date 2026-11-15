@@ -1,0 +1,7 @@
+{"total_count": 2, "incomplete_results": false, "items": [
+  {"number": 7, "title": "Bump \u001b[31mdeps‮", "html_url": "https://github.com/acme/web/pull/7",
+   "repository_url": "https://api.github.com/repos/acme/web", "pull_request": {"url": "https://api.github.com/repos/acme/web/pulls/7"},
+   "user": {"login": "me"}, "updated_at": "2026-11-08T10:00:00Z"},
+  {"number": 99, "title": "An issue, not a PR",
+   "repository_url": "https://api.github.com/repos/acme/web", "user": {"login": "me"}}
+]}

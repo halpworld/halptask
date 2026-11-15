@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-hide-capture"
+description = "Enables the hide_capture command without any pre-configured scope."
+commands.allow = ["hide_capture"]
+
+[[permission]]
+identifier = "deny-hide-capture"
+description = "Denies the hide_capture command without any pre-configured scope."
+commands.deny = ["hide_capture"]

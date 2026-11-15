@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-widget"
+description = "Enables the ext_widget command without any pre-configured scope."
+commands.allow = ["ext_widget"]
+
+[[permission]]
+identifier = "deny-ext-widget"
+description = "Denies the ext_widget command without any pre-configured scope."
+commands.deny = ["ext_widget"]

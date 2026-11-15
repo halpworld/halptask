@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "hub-main",
+  "description": "The main window only: store an integration token in the keychain and show its hint, and host Tier C widget frames (look up a widget, relay its read-only calls as module:<pack_id>), and run Tier B transforms for computed widgets. The capture window never handles secrets, widgets or transforms. No capability names a remote or halpext origin: widget frames get no IPC.",
+  "windows": ["main"],
+  "permissions": [
+    "allow-integrations-set-token",
+    "allow-integrations-secret-hint",
+    "allow-ext-widget",
+    "allow-ext-call",
+    "allow-ext-run-transform"
+  ]
+}

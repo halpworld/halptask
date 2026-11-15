@@ -1,0 +1,5 @@
+# Build into hub/target, shared with the core workspace, so dependencies the
+# shell and the core have in common are compiled and stored once instead of
+# twice. Relative paths here resolve from app/src-tauri.
+[build]
+target-dir = "../../target"

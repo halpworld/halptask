@@ -1,0 +1,583 @@
+[
+  {
+    "args": {
+      "id": "b",
+      "x": 0,
+      "y": 0
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 6,
+        "x": 0,
+        "y": 2
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "c",
+        "w": 12,
+        "x": 0,
+        "y": 4
+      }
+    ],
+    "name": "move pushes down and compacts",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "c",
+        "w": 12,
+        "x": 0,
+        "y": 2
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 11,
+      "y": 9
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 8,
+        "y": 0
+      }
+    ],
+    "name": "move is clamped into the row and floats up",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 0,
+      "y": 200
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 0
+      }
+    ],
+    "name": "move far down floats back up",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "d",
+      "x": 0,
+      "y": 0
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 6
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 8
+      },
+      {
+        "h": 2,
+        "id": "c",
+        "w": 4,
+        "x": 0,
+        "y": 10
+      },
+      {
+        "h": 6,
+        "id": "d",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "name": "move cascades through a column",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 2
+      },
+      {
+        "h": 2,
+        "id": "c",
+        "w": 4,
+        "x": 0,
+        "y": 4
+      },
+      {
+        "h": 6,
+        "id": "d",
+        "w": 4,
+        "x": 4,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {},
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 4
+      },
+      {
+        "h": 2,
+        "id": "B",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 2
+      }
+    ],
+    "name": "tie-break is bytewise by id (uppercase sorts before lowercase)",
+    "op": "compact",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      {
+        "h": 2,
+        "id": "B",
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 5
+      }
+    ]
+  },
+  {
+    "args": {},
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 0
+      }
+    ],
+    "name": "compact floats everything up",
+    "op": "compact",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 9
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 4,
+      "id": "a",
+      "w": 1
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 4,
+        "id": "a",
+        "w": 2,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 4
+      }
+    ],
+    "name": "resize respects the minimum and pushes",
+    "op": "resize",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 0,
+        "y": 2
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 2,
+      "id": "a",
+      "w": 12
+    },
+    "columns": 12,
+    "expect": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 2
+      }
+    ],
+    "name": "resize to the full width pushes the neighbour down",
+    "op": "resize",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 2,
+        "id": "b",
+        "w": 4,
+        "x": 4,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 2,
+      "w": 4
+    },
+    "columns": 12,
+    "expect": {
+      "x": 0,
+      "y": 3
+    },
+    "name": "find space below a full row",
+    "op": "find_space",
+    "widgets": [
+      {
+        "h": 3,
+        "id": "a",
+        "w": 12,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 2,
+      "w": 4
+    },
+    "columns": 12,
+    "expect": {
+      "x": 4,
+      "y": 0
+    },
+    "name": "find space beside",
+    "op": "find_space",
+    "widgets": [
+      {
+        "h": 3,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 0,
+      "y": 201
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "y above MAX_GRID_ROWS is refused",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 0,
+      "y": 4294967295
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "u32-scale y is refused",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 12,
+      "y": 0
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "x at the column count is refused",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": -1,
+      "y": 0
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "negative x is refused, not clamped",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "id": "a",
+      "x": 0,
+      "y": 1.5
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "fractional y is refused, not rounded",
+    "op": "move",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 25,
+      "id": "a",
+      "w": 4
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "h above 24 is refused",
+    "op": "resize",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 2,
+      "id": "a",
+      "w": 0
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "w of 0 is refused",
+    "op": "resize",
+    "widgets": [
+      {
+        "h": 2,
+        "id": "a",
+        "w": 4,
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "args": {
+      "h": 2,
+      "w": 13
+    },
+    "columns": 12,
+    "expect": {
+      "error": "invalid_args"
+    },
+    "name": "w above the column count is refused",
+    "op": "find_space",
+    "widgets": []
+  }
+]

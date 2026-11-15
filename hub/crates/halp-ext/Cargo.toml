@@ -1,0 +1,36 @@
+[package]
+name = "halp-ext"
+description = "HalpTask Hub extension host: runs Tier B pure-transform pack modules in a locked-down wasmtime sandbox."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+halp-domain.workspace = true
+# P5-C2 wiring: inputs run through `Core::dispatch` as `module:<pack_id>`.
+# The dependency points this way only: the core and halpd never link
+# halp-ext (and so never link wasmtime).
+halp-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+jsonschema.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+tokio.workspace = true
+# Pinned exactly (like rmcp). No default features: no on-disk `cache`, no
+# WASI, no component model, no threads, no `wat` text parsing, no async,
+# no GC proposals. Only the compiler and the runtime.
+wasmtime = { version = "=50.0.1", default-features = false, features = ["cranelift", "runtime", "std"] }
+
+[dev-dependencies]
+# Test corpus is written in WAT; production only accepts binary modules.
+wat = "=1.261.0"
+tempfile.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }
+halp-store.workspace = true
+base64.workspace = true
+
+[lints]
+workspace = true
